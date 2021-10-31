@@ -9,10 +9,8 @@ import com.jslib.injector.IScope;
 import com.jslib.injector.Key;
 import com.jslib.injector.ScopedProvider;
 
-class SingletonScopeProvider<T> extends ScopedProvider<T>
+public class SingletonScopeProvider<T> extends ScopedProvider<T>
 {
-  private static final Map<Key<?>, Object> cache = new HashMap<>();
-
   private final Key<T> key;
 
   SingletonScopeProvider(Key<T> key, Provider<T> provider)
@@ -52,6 +50,13 @@ class SingletonScopeProvider<T> extends ScopedProvider<T>
   }
 
   // --------------------------------------------------------------------------------------------
+
+  private static final Map<Key<?>, Object> cache = new HashMap<>();
+
+  public static void clearCache()
+  {
+    cache.clear();
+  }
 
   public static class Factory implements IScope
   {
