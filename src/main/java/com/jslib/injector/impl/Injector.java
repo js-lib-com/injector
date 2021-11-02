@@ -37,7 +37,7 @@ public class Injector implements IInjector
     return injector;
   }
 
-  private final Map<Class<? extends Annotation>, IScope> scopes = new HashMap<>();
+  private final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
 
   private final Map<Key<?>, Provider<?>> bindings = new HashMap<>();
 
@@ -45,8 +45,8 @@ public class Injector implements IInjector
 
   public Injector()
   {
-    bindScope(Singleton.class, new SingletonScopeProvider.Factory());
-    bindScope(ThreadScoped.class, new ThreadScopeProvider.Factory());
+    bindScope(Singleton.class, new SingletonScopeProvider.Factory<>());
+    bindScope(ThreadScoped.class, new ThreadScopeProvider.Factory<>());
   }
 
   @Override
@@ -128,7 +128,7 @@ public class Injector implements IInjector
   }
 
   @Override
-  public void bindScope(Class<? extends Annotation> annotation, IScope scope)
+  public <T> void bindScope(Class<? extends Annotation> annotation, IScope<T> scope)
   {
     if(!annotation.isAnnotationPresent(Scope.class)) {
       throw new IllegalArgumentException("Not a scope annotation: " + annotation);
@@ -137,9 +137,10 @@ public class Injector implements IInjector
     scopes.put(annotation, scope);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public IScope getScope(Class<? extends Annotation> annotation)
+  public <T> IScope<T> getScope(Class<? extends Annotation> annotation)
   {
-    return scopes.get(annotation);
+    return (IScope<T>)scopes.get(annotation);
   }
 }

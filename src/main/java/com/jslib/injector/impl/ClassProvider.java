@@ -21,7 +21,7 @@ class ClassProvider<T> implements Provider<T> {
 	private final Class<? extends T> type;
 
 	public ClassProvider(IInjector injector, Class<? extends T> type) {
-		Params.isNotInterface(type, "Type");
+		Params.isInstantiable(type, "Type");
 		this.injector = injector;
 		this.type = type;
 	}

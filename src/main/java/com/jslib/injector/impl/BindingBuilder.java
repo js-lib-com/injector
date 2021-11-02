@@ -78,7 +78,7 @@ class BindingBuilder<T> implements IBindingBuilder<T> {
 			throw new IllegalArgumentException("Not a scope annotation: " + annotation);
 		}
 
-		IScope scope = injector.getScope(annotation);
+		IScope<T> scope = injector.getScope(annotation);
 		if (scope == null) {
 			throw new IllegalStateException("No scope for annotation " + annotation);
 		}

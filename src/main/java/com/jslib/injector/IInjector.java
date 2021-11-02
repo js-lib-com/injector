@@ -27,8 +27,8 @@ public interface IInjector {
 	
 	<T> void fireEvent(IProvisionInvocation<T> provisionInvocation);
 
-	void bindScope(Class<? extends Annotation> annotation, IScope scope);
+	<T> void bindScope(Class<? extends Annotation> annotation, IScope<T> scope);
 	
-	IScope getScope(Class<? extends Annotation> annotation);
+	<T> IScope<T> getScope(Class<? extends Annotation> annotation);
 
 }

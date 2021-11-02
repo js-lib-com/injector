@@ -12,7 +12,7 @@ import js.util.Strings;
  * 
  * When used with a provisioning provider all generated instances are assignable to key type; anyway, all instances are
  * different. When used with a scoped provider this key identifies cached instance so that the same instance is
- * retrieved in a given scope. For that purpose there is {@link #scope()}.
+ * retrieved in a given scope. For that purpose there is {@link #toScope()}.
  * 
  * WARN: This key implementation assume that supplied qualifier annotations properly implement hash code and equals
  * accordingly their attributes.

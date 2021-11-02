@@ -8,6 +8,8 @@ import com.jslib.injector.IBindingBuilder;
 import com.jslib.injector.IInjector;
 import com.jslib.injector.IModule;
 
+import js.util.Params;
+
 public abstract class AbstractModule implements IModule
 {
   private final List<IBinding<?>> bindings = new ArrayList<>();
@@ -43,6 +45,7 @@ public abstract class AbstractModule implements IModule
    */
   protected <T> IBindingBuilder<T> bind(Class<T> type)
   {
+    Params.notNull(type, "Instance type");
     Binding<T> binding = type.isInterface() ? new Binding<>(type) : new Binding<>(type, new ClassProvider<>(injector, type));
     bindings.add(binding);
     return new BindingBuilder<>(injector, binding);
@@ -50,6 +53,7 @@ public abstract class AbstractModule implements IModule
 
   protected <T> IBindingBuilder<T> bindInstance(Class<T> type, T instance)
   {
+    Params.notNull(type, "Instance type");
     Binding<T> binding = new Binding<>(type, new InstanceProvider<>(instance));
     bindings.add(binding);
     return new BindingBuilder<>(injector, binding);
