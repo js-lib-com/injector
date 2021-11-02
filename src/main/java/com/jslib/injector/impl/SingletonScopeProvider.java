@@ -11,9 +11,16 @@ import com.jslib.injector.ScopedProvider;
 
 public class SingletonScopeProvider<T> extends ScopedProvider<T>
 {
+  private static final Map<Key<?>, Object> cache = new HashMap<>();
+
+  public static void clearCache()
+  {
+    cache.clear();
+  }
+
   private final Key<T> key;
 
-  SingletonScopeProvider(Key<T> key, Provider<T> provider)
+  private SingletonScopeProvider(Key<T> key, Provider<T> provider)
   {
     super(provider);
     this.key = key;
@@ -51,17 +58,10 @@ public class SingletonScopeProvider<T> extends ScopedProvider<T>
 
   // --------------------------------------------------------------------------------------------
 
-  private static final Map<Key<?>, Object> cache = new HashMap<>();
-
-  public static void clearCache()
-  {
-    cache.clear();
-  }
-
-  public static class Factory implements IScope
+  public static class Factory<T> implements IScope<T>
   {
     @Override
-    public <T> Provider<T> scope(Key<T> key, Provider<T> provider)
+    public Provider<T> scope(Key<T> key, Provider<T> provider)
     {
       return new SingletonScopeProvider<>(key, provider);
     }
