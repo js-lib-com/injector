@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Stack;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Qualifier;
 
 import com.jslib.injector.IInjector;
+import com.jslib.injector.ITypedProvider;
 import com.jslib.injector.IProvisionInvocation;
 import com.jslib.injector.Key;
 import com.jslib.injector.ProvisionException;
@@ -27,7 +27,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.util.Params;
 
-class ClassProvider<T> implements Provider<T>
+class ClassProvider<T> implements ITypedProvider<T>
 {
   private static final Log log = LogFactory.getLog(ClassProvider.class);
 
@@ -57,6 +57,12 @@ class ClassProvider<T> implements Provider<T>
   }
 
   @Override
+  public Class<? extends T> type()
+  {
+    return type;
+  }
+
+  @Override
   public T get()
   {
     Stack<Class<?>> stackTrace = dependenciesStack.get();
@@ -80,7 +86,7 @@ class ClassProvider<T> implements Provider<T>
         }
 
         log.error(builder.toString());
-        //throw new BugError("Circular dependency for |%s|.", type.getName());
+        // throw new BugError("Circular dependency for |%s|.", type.getName());
       }
       finally {
         // takes care to current thread stack trace is removed
@@ -126,7 +132,7 @@ class ClassProvider<T> implements Provider<T>
     return type.getCanonicalName() + ":CLASS";
   }
 
-  private static <T> Constructor<T> getConstructor(Class<T> type)
+  static <T> Constructor<T> getConstructor(Class<T> type)
   {
     @SuppressWarnings("unchecked")
     Constructor<T>[] declaredConstructors = (Constructor<T>[])type.getDeclaredConstructors();
@@ -149,19 +155,16 @@ class ClassProvider<T> implements Provider<T>
         break;
       }
 
-      if(declaredConstructor.getParameterTypes().length == 0) {
+      if(declaredConstructor.getParameters().length == 0) {
         defaultConstructor = declaredConstructor;
         continue;
-      }
-      if(constructor != null) {
-        throw new ProvisionException("Implementation class |%s| has not a single constructor with parameters. Use @Inject to declare which constructor to use.", type);
       }
       constructor = declaredConstructor;
     }
 
     if(constructor == null) {
       if(defaultConstructor == null) {
-        throw new ProvisionException("Invalid implementation class |%s|. Missing default constructor.", type);
+        throw new ProvisionException("Invalid implementation class |%s|. Missing default constructor or constructor marked with @Inject.", type);
       }
       constructor = defaultConstructor;
     }
@@ -234,7 +237,7 @@ class ClassProvider<T> implements Provider<T>
   private static Annotation getQualifier(AnnotatedElement element)
   {
     for(Annotation annotation : element.getAnnotations()) {
-      if(annotation.getClass().getAnnotation(Qualifier.class) != null) {
+      if(annotation.annotationType().isAnnotationPresent(Qualifier.class)) {
         return annotation;
       }
     }

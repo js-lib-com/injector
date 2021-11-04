@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import javax.inject.Provider;
+import com.jslib.injector.ITypedProvider;
 
 import js.lang.BugError;
 import js.log.Log;
@@ -15,7 +15,7 @@ import js.rmi.UnsupportedProtocolException;
 import js.util.Params;
 import js.util.Strings;
 
-class RemoteProvider<T> implements Provider<T>
+class RemoteProvider<T> implements ITypedProvider<T>
 {
   private static final Log log = LogFactory.getLog(RemoteProvider.class);
 
@@ -50,6 +50,12 @@ class RemoteProvider<T> implements Provider<T>
 
     this.type = type;
     this.implementationURL = implementationURL;
+  }
+
+  @Override
+  public Class<? extends T> type()
+  {
+    return type;
   }
 
   @Override

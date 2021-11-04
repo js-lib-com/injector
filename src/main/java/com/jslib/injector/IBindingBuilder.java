@@ -28,9 +28,13 @@ public interface IBindingBuilder<T> {
 
 	IBindingBuilder<T> instance(T instance);
 
-	IBindingBuilder<T> toProvider(Provider<T> provider);
+    IBindingBuilder<T> toProvider(Provider<T> provider);
 
-	IBindingBuilder<T> provider(Provider<T> provider);
+    IBindingBuilder<T> provider(Provider<T> provider);
+
+    IBindingBuilder<T> toProvider(ITypedProvider<T> provider);
+
+    IBindingBuilder<T> provider(ITypedProvider<T> provider);
 
 	IBindingBuilder<T> on(URI implementationURL);
 

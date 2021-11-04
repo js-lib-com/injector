@@ -3,6 +3,7 @@ package com.jslib.injector.impl;
 import javax.inject.Provider;
 
 import com.jslib.injector.IBinding;
+import com.jslib.injector.ITypedProvider;
 import com.jslib.injector.Key;
 
 class Binding<T> implements IBinding<T> {
@@ -13,7 +14,7 @@ class Binding<T> implements IBinding<T> {
 		this.key = Key.get(type);
 	}
 
-	public Binding(Class<T> type, Provider<T> provider) {
+	public Binding(Class<T> type, ITypedProvider<T> provider) {
 		this.key = Key.get(type);
 		this.provider = provider;
 	}
