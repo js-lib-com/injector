@@ -51,22 +51,18 @@ public interface IInjector
 
   /**
    * Get cached instance from a scope provider or null on cache miss. This method should not trigger cache update on
-   * target scoped provider. It is merely intended to detect if cache has an instance for requested type. Throws
-   * provision exception if there are no bindings for requested type.
-   * 
-   * This method should be executed only on a scoped provider; attempting to use it on a provisioning provider will
-   * throw provision exception.
+   * target scoped provider. It is merely intended to detect if cache has an instance for requested type. Return also
+   * null if there are no bindings for requested type.
    * 
    * @param type instance type.
    * @return cached instance or null on cache miss.
    * @param <T> generic instance type.
-   * @throws ProvisionException if there is no bindings for requested instance type or provider is not scoped.
    */
   <T> T getScopeInstance(Class<T> type);
 
-  <T> void bindListener(IProvisionListener<T> provisionListener);
+  void bindListener(IProvisionListener provisionListener);
 
-  <T> void unbindListener(IProvisionListener<T> provisionListener);
+  void unbindListener(IProvisionListener provisionListener);
 
   <T> void fireEvent(IProvisionInvocation<T> provisionInvocation);
 

@@ -9,17 +9,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import javax.inject.Inject;
 import javax.inject.Qualifier;
 
 import com.jslib.injector.IInjector;
-import com.jslib.injector.ITypedProvider;
 import com.jslib.injector.IProvisionInvocation;
+import com.jslib.injector.ITypedProvider;
 import com.jslib.injector.Key;
 import com.jslib.injector.ProvisionException;
 
@@ -39,8 +37,8 @@ class ClassProvider<T> implements ITypedProvider<T>
 
   private final Constructor<? extends T> constructor;
   private final List<Key<?>> constructorKeys;
-  private final Map<Key<?>, Field> fields;
-  private final Map<Key<?>, Method> methods;
+  private final List<FieldKey<?>> fields;
+  private final List<MethodKey<?>> methods;
 
   public ClassProvider(IInjector injector, Class<? extends T> type)
   {
@@ -70,7 +68,6 @@ class ClassProvider<T> implements ITypedProvider<T>
       stackTrace = new Stack<>();
       dependenciesStack.set(stackTrace);
     }
-    stackTrace.push(type);
 
     if(stackTrace.contains(type)) {
       try {
@@ -84,9 +81,9 @@ class ClassProvider<T> implements ITypedProvider<T>
           builder.append(stackTraceClass.getName());
           builder.append("\r\n");
         }
-
         log.error(builder.toString());
-        // throw new BugError("Circular dependency for |%s|.", type.getName());
+
+        throw new IllegalStateException(String.format("Circular dependency on |%s|. See stack trace on logger.", type.getName()));
       }
       finally {
         // takes care to current thread stack trace is removed
@@ -94,22 +91,19 @@ class ClassProvider<T> implements ITypedProvider<T>
       }
     }
 
+    stackTrace.push(type);
     try {
       List<Object> arguments = new ArrayList<>();
       for(Key<?> key : constructorKeys) {
-        // TODO: circular dependency
         arguments.add(injector.getInstance(key));
       }
       T instance = constructor.newInstance(arguments.toArray());
 
-      for(Map.Entry<Key<?>, Field> entry : fields.entrySet()) {
-        // TODO: circular dependency
-        entry.getValue().set(instance, injector.getInstance(entry.getKey()));
+      for(FieldKey<?> field : fields) {
+        field.set(instance);
       }
-
-      for(Map.Entry<Key<?>, Method> entry : methods.entrySet()) {
-        // TODO: circular dependency
-        entry.getValue().invoke(instance, injector.getInstance(entry.getKey()));
+      for(MethodKey<?> method : methods) {
+        method.invoke(instance);
       }
 
       injector.fireEvent(IProvisionInvocation.create(this, instance));
@@ -172,21 +166,21 @@ class ClassProvider<T> implements ITypedProvider<T>
     return constructor;
   }
 
-  private static Map<Key<?>, Field> getFields(Class<?> type)
+  private List<FieldKey<?>> getFields(Class<?> type)
   {
-    Map<Key<?>, Field> fields = new HashMap<>();
+    List<FieldKey<?>> fields = new ArrayList<>();
     for(Field field : type.getDeclaredFields()) {
       if(isInjected(field)) {
         field.setAccessible(true);
-        fields.put(Key.get(field.getType(), getQualifier(field)), field);
+        fields.add(new FieldKey<>(field, Key.get(field.getType(), getQualifier(field))));
       }
     }
     return fields;
   }
 
-  private static Map<Key<?>, Method> getMethods(Class<?> type)
+  private List<MethodKey<?>> getMethods(Class<?> type)
   {
-    Map<Key<?>, Method> methods = new HashMap<>();
+    List<MethodKey<?>> methods = new ArrayList<>();
     for(Method method : type.getDeclaredMethods()) {
       if(isInjected(method)) {
         List<Key<?>> parameterKeys = getParameterKeys(method);
@@ -194,7 +188,7 @@ class ClassProvider<T> implements ITypedProvider<T>
           throw new IllegalArgumentException("Invalid inject method " + method);
         }
         method.setAccessible(true);
-        methods.put(parameterKeys.get(0), method);
+        methods.add(new MethodKey<>(method, parameterKeys.get(0)));
       }
     }
     return methods;
@@ -242,5 +236,39 @@ class ClassProvider<T> implements ITypedProvider<T>
       }
     }
     return null;
+  }
+
+  private class FieldKey<F>
+  {
+    Field field;
+    Key<F> key;
+
+    public FieldKey(Field field, Key<F> key)
+    {
+      this.field = field;
+      this.key = key;
+    }
+
+    void set(Object instance) throws IllegalArgumentException, IllegalAccessException
+    {
+      field.set(instance, injector.getInstance(key));
+    }
+  }
+
+  private class MethodKey<M>
+  {
+    Method method;
+    Key<M> key;
+
+    public MethodKey(Method method, Key<M> key)
+    {
+      this.method = method;
+      this.key = key;
+    }
+
+    void invoke(Object instance) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+      method.invoke(instance, injector.getInstance(key));
+    }
   }
 }

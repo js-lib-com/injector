@@ -63,4 +63,10 @@ class RemoteProvider<T> implements ITypedProvider<T>
   {
     return remoteFactory.getRemoteInstance(type, implementationURL);
   }
+
+  @Override
+  public String toString()
+  {
+    return type.getCanonicalName() + ":" + implementationURL;
+  }
 }

@@ -126,6 +126,13 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   }
 
   @Override
+  public IBindingBuilder<T> service()
+  {
+    binding.setProvider(new ServiceProvider<>(binding.key().type()));
+    return this;
+  }
+
+  @Override
   public IBindingBuilder<T> on(URI implementationURL)
   {
     return on(implementationURL.toString());

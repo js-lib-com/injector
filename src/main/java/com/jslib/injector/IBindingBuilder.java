@@ -36,6 +36,8 @@ public interface IBindingBuilder<T> {
 
     IBindingBuilder<T> provider(ITypedProvider<T> provider);
 
+    IBindingBuilder<T> service();
+
 	IBindingBuilder<T> on(URI implementationURL);
 
 	IBindingBuilder<T> on(String implementationURL);

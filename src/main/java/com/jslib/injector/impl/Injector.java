@@ -41,7 +41,7 @@ public class Injector implements IInjector
 
   private final Map<Key<?>, Provider<?>> bindings = new HashMap<>();
 
-  private final Set<IProvisionListener<?>> provisionListeners = Collections.synchronizedSet(new HashSet<>());
+  private final Set<IProvisionListener> provisionListeners = Collections.synchronizedSet(new HashSet<>());
 
   public Injector()
   {
@@ -97,34 +97,33 @@ public class Injector implements IInjector
     @SuppressWarnings("unchecked")
     Provider<T> provider = (Provider<T>)bindings.get(key);
     if(provider == null) {
-      throw new ProvisionException("No provider for " + key);
+      log.debug("No provider for |%s|.", key);
+      return null;
     }
     if(!(provider instanceof ScopedProvider)) {
-      throw new ProvisionException("Not a scoped provider " + provider);
+      log.debug("Not a scoped provider |%s|.", provider);
+      return null;
     }
     ScopedProvider<T> scopedProvider = (ScopedProvider<T>)provider;
     return scopedProvider.getScopeInstance();
   }
 
   @Override
-  public <T> void bindListener(IProvisionListener<T> provisionListener)
+  public void bindListener(IProvisionListener provisionListener)
   {
     provisionListeners.add(provisionListener);
   }
 
   @Override
-  public <T> void unbindListener(IProvisionListener<T> provisionListener)
+  public void unbindListener(IProvisionListener provisionListener)
   {
     provisionListeners.remove(provisionListener);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T> void fireEvent(IProvisionInvocation<T> provisionInvocation)
   {
-    provisionListeners.forEach(listener -> {
-      ((IProvisionListener<T>)listener).onProvision(provisionInvocation);
-    });
+    provisionListeners.forEach(listener -> listener.onProvision(provisionInvocation));
   }
 
   @Override

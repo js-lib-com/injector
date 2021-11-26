@@ -23,4 +23,10 @@ class InstanceProvider<T> implements ITypedProvider<T>
   {
     return instance;
   }
+
+  @Override
+  public String toString()
+  {
+    return instance.getClass().getCanonicalName() + ":INSTANCE";
+  }
 }
