@@ -1,9 +1,8 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
-import com.jslib.injector.IProvisionInvocation;
-import com.jslib.injector.ITypedProvider;
-import com.jslib.injector.ProvisionException;
-
+import js.injector.IProvisionInvocation;
+import js.injector.ITypedProvider;
+import js.injector.ProvisionException;
 import js.lang.NoProviderException;
 import js.util.Classes;
 

@@ -1,4 +1,4 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -12,8 +12,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.jslib.injector.Key;
-import com.jslib.injector.impl.ThreadScopeProvider.Factory;
+import com.jslib.injector.ThreadScopeProvider.Factory;
+
+import js.injector.Key;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ThreadScopeProviderTest

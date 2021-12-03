@@ -5,8 +5,11 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jslib.injector.impl.AbstractModule;
-import com.jslib.injector.impl.Injector;
+import js.injector.AbstractModule;
+import js.injector.IInjector;
+import js.injector.Key;
+import js.injector.Names;
+import js.injector.ProvisionException;
 
 public class InjectorGetInstanceTest
 {

@@ -1,196 +1,95 @@
 package com.jslib.injector;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import javax.inject.Singleton;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import com.jslib.injector.impl.AbstractModule;
-import com.jslib.injector.impl.Injector;
+import com.jslib.injector.SingletonScopeProvider.Factory;
 
+import js.injector.Key;
+
+@RunWith(MockitoJUnitRunner.class)
 public class SingletonScopeProviderTest
 {
-  private IInjector injector;
+  @Mock
+  private Key<Object> instanceKey;
+
+  private SingletonScopeProvider<Object> scopeProvider;
 
   @Before
   public void beforeTest()
   {
-    injector = new Injector();
+    SingletonScopeProvider.Factory<Object> factory=new Factory<>();
+    scopeProvider = (SingletonScopeProvider<Object>)factory.scope(instanceKey, () -> new Object());
   }
 
   @Test
-  public void GivenTypeBindAndCacheMiss_WhenGetInstanceByType_ThenNotNull()
+  public void GivenCacheMiss_WhenGetScopeInstance_ThenNull()
   {
     // given
-    injector.configure(new AbstractModule()
-    {
-      @Override
-      protected void configure()
-      {
-        bind(Object.class).in(Singleton.class);
-      }
-    });
 
     // when
-    Object instance = injector.getInstance(Object.class);
+    Object instance = scopeProvider.getScopeInstance();
 
     // then
-    assertNotNull(instance);
+    assertThat(instance, nullValue());
   }
 
   @Test
-  public void GivenTypeBindAndCache_WhenGetInstanceByType_ThenNotNull()
+  public void GivenCache_WhenGetScopeInstance_ThenNotNull()
   {
     // given
-    injector.configure(new AbstractModule()
-    {
-      @Override
-      protected void configure()
-      {
-        bind(Object.class).in(Singleton.class);
-      }
-    });
-    // fill scoped provider cache
-    injector.getInstance(Object.class);
+    scopeProvider.get();
 
     // when
-    Object instance = injector.getInstance(Object.class);
+    Object instance = scopeProvider.getScopeInstance();
 
     // then
-    assertNotNull(instance);
+    assertThat(instance, notNullValue());
   }
 
   @Test
-  public void GivenTypeBindAndCacheMiss_WhenGetInstanceTwice_ThenEqual()
+  public void GivenCacheMiss_WhenGet_ThenNotNull()
   {
     // given
-    injector.configure(new AbstractModule()
-    {
-      @Override
-      protected void configure()
-      {
-        bind(Object.class).in(Singleton.class);
-      }
-    });
 
     // when
-    Object instance1 = injector.getInstance(Object.class);
-    Object instance2 = injector.getInstance(Object.class);
+    Object instance = scopeProvider.get();
 
     // then
-    assertTrue(instance1 == instance2);
+    assertThat(instance, notNullValue());
   }
 
   @Test
-  public void GivenTypeBindAndCache_WhenGetInstanceTwice_ThenEqual()
+  public void GivenCache_WhenGet_ThenNotNull()
   {
     // given
-    injector.configure(new AbstractModule()
-    {
-      @Override
-      protected void configure()
-      {
-        bind(Object.class).in(Singleton.class);
-      }
-    });
-    // fill scoped provider cache
-    injector.getInstance(Object.class);
+    scopeProvider.get();
 
     // when
-    Object instance1 = injector.getInstance(Object.class);
-    Object instance2 = injector.getInstance(Object.class);
+    Object instance = scopeProvider.get();
 
     // then
-    assertTrue(instance1 == instance2);
+    assertThat(instance, notNullValue());
   }
 
   @Test
-  public void GivenTypeBindAndCache_WhenGetInstanceFromThread_ThenEqual() throws InterruptedException
+  public void GivenCachedInstance_WhenGetAnotherInstance_ThenEqual()
   {
     // given
-    injector.configure(new AbstractModule()
-    {
-      @Override
-      protected void configure()
-      {
-        bind(Object.class).in(Singleton.class);
-      }
-    });
-    // fill scoped provider cache
-    injector.getInstance(Object.class);
+    Object instance1 = scopeProvider.get();
 
     // when
-    Object instance = injector.getInstance(Object.class);
-
-    class ThreadData
-    {
-      Object instance;
-    }
-
-    ThreadData threadData = new ThreadData();
-    Thread thread = new Thread(new Runnable()
-    {
-      @Override
-      public void run()
-      {
-        threadData.instance = injector.getInstance(Object.class);
-      }
-    });
-    thread.start();
-    thread.join();
-    
-    // then
-    assertTrue(instance == threadData.instance);
-  }
-
-  @Test
-  public void GivenTwoNamedBindingsAndCacheMiss_WhenGetInstanceByName_ThenNotEqual()
-  {
-    // given
-    injector.configure(new AbstractModule()
-    {
-      @Override
-      protected void configure()
-      {
-        bind(Object.class).annotatedWith(Names.named("object1")).in(Singleton.class);
-        bind(Object.class).annotatedWith(Names.named("object2")).in(Singleton.class);
-      }
-    });
-
-    // when
-    Object instance1 = injector.getInstance(Object.class, "object1");
-    Object instance2 = injector.getInstance(Object.class, "object2");
+    Object instance2 = scopeProvider.get();
 
     // then
-    assertFalse(instance1 == instance2);
-  }
-
-  @Test
-  public void GivenTwoNamedBindingsAndCache_WhenGetInstanceByName_ThenNotEqual()
-  {
-    // given
-    injector.configure(new AbstractModule()
-    {
-      @Override
-      protected void configure()
-      {
-        bind(Object.class).annotatedWith(Names.named("object1")).in(Singleton.class);
-        bind(Object.class).annotatedWith(Names.named("object2")).in(Singleton.class);
-      }
-    });
-    // fill scoped provider cache
-    injector.getInstance(Object.class, "object1");
-    injector.getInstance(Object.class, "object2");
-
-    // when
-    Object instance1 = injector.getInstance(Object.class, "object1");
-    Object instance2 = injector.getInstance(Object.class, "object2");
-
-    // then
-    assertFalse(instance1 == instance2);
+    assertThat(instance1, equalTo(instance2));
   }
 }

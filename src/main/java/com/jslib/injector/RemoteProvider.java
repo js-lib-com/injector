@@ -1,11 +1,10 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import com.jslib.injector.ITypedProvider;
-
+import js.injector.ITypedProvider;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;

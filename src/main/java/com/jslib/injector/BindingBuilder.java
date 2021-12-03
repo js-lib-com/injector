@@ -1,4 +1,4 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -7,12 +7,12 @@ import javax.inject.Provider;
 import javax.inject.Qualifier;
 import javax.inject.Scope;
 
-import com.jslib.injector.IBinding;
-import com.jslib.injector.IBindingBuilder;
-import com.jslib.injector.IInjector;
-import com.jslib.injector.IScope;
-import com.jslib.injector.ITypedProvider;
-import com.jslib.injector.Names;
+import js.injector.IBinding;
+import js.injector.IBindingBuilder;
+import js.injector.IInjector;
+import js.injector.IScope;
+import js.injector.ITypedProvider;
+import js.injector.Names;
 
 class BindingBuilder<T> implements IBindingBuilder<T>
 {

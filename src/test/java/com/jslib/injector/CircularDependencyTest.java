@@ -12,7 +12,8 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.injector.fixture.TestModule;
-import com.jslib.injector.impl.Injector;
+
+import js.injector.IInjector;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CircularDependencyTest
@@ -23,7 +24,7 @@ public class CircularDependencyTest
   @Before
   public void beforeTest()
   {
-    injector = Injector.create();
+    injector = new Injector().configure();
   }
 
   @Test

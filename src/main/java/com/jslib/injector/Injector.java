@@ -1,4 +1,4 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -11,31 +11,23 @@ import javax.inject.Provider;
 import javax.inject.Scope;
 import javax.inject.Singleton;
 
-import com.jslib.injector.IBindingBuilder;
-import com.jslib.injector.IInjector;
-import com.jslib.injector.IModule;
-import com.jslib.injector.IProvisionInvocation;
-import com.jslib.injector.IProvisionListener;
-import com.jslib.injector.IScope;
-import com.jslib.injector.Key;
-import com.jslib.injector.Names;
-import com.jslib.injector.ProvisionException;
-import com.jslib.injector.ScopedProvider;
-import com.jslib.injector.ThreadScoped;
-
+import js.injector.IBindingBuilder;
+import js.injector.IInjector;
+import js.injector.IModule;
+import js.injector.IProvisionInvocation;
+import js.injector.IProvisionListener;
+import js.injector.IScope;
+import js.injector.Key;
+import js.injector.Names;
+import js.injector.ProvisionException;
+import js.injector.ScopedProvider;
+import js.injector.ThreadScoped;
 import js.log.Log;
 import js.log.LogFactory;
 
 public class Injector implements IInjector
 {
   private static final Log log = LogFactory.getLog(Injector.class);
-
-  public static IInjector create(IModule... modules)
-  {
-    IInjector injector = new Injector();
-    injector.configure(modules);
-    return injector;
-  }
 
   private final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
 
@@ -45,12 +37,15 @@ public class Injector implements IInjector
 
   public Injector()
   {
+    // clear scope caches, just in case injector is recreated inside the same JVM, e.g. unit tests
+    clearCache();
+
     bindScope(Singleton.class, new SingletonScopeProvider.Factory<>());
     bindScope(ThreadScoped.class, new ThreadScopeProvider.Factory<>());
   }
 
   @Override
-  public void configure(IModule... modules)
+  public IInjector configure(IModule... modules)
   {
     log.trace("configure(Module...)");
     for(IModule module : modules) {
@@ -59,12 +54,21 @@ public class Injector implements IInjector
         bindings.put(binding.key(), binding.provider());
       });
     }
+    return this;
   }
 
   @Override
   public <T> IBindingBuilder<T> getBindingBuilder(Class<T> type)
   {
-    return new BindingBuilder<>(this, new Binding<>(type));
+    Binding<T> binding = type.isInterface() ? new Binding<>(type) : new Binding<>(type, new ClassProvider<>(this, type));
+    return new BindingBuilder<>(this, binding);
+  }
+
+  @Override
+  public <T> IBindingBuilder<T> getBindingBuilder(Class<T> type, T instance)
+  {
+    Binding<T> binding = new Binding<>(type, new InstanceProvider<>(instance));
+    return new BindingBuilder<>(this, binding);
   }
 
   @Override
@@ -141,5 +145,12 @@ public class Injector implements IInjector
   public <T> IScope<T> getScope(Class<? extends Annotation> annotation)
   {
     return (IScope<T>)scopes.get(annotation);
+  }
+
+  @Override
+  public void clearCache()
+  {
+    SingletonScopeProvider.clearCache();
+    ThreadScopeProvider.clearCache();
   }
 }

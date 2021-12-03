@@ -1,6 +1,6 @@
 package com.jslib.injector.fixture;
 
-import com.jslib.injector.impl.AbstractModule;
+import js.injector.AbstractModule;
 
 public class TestModule extends AbstractModule
 {

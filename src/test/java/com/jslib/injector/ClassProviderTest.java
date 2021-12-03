@@ -1,4 +1,4 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

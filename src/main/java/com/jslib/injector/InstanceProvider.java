@@ -1,6 +1,6 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
-import com.jslib.injector.ITypedProvider;
+import js.injector.ITypedProvider;
 
 class InstanceProvider<T> implements ITypedProvider<T>
 {

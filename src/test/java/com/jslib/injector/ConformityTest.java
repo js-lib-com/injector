@@ -9,7 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jslib.injector.fixture.TestModule;
-import com.jslib.injector.impl.Injector;
+
+import js.injector.IInjector;
 
 public class ConformityTest
 {

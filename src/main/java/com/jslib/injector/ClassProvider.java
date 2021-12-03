@@ -1,4 +1,4 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -15,12 +15,11 @@ import java.util.Stack;
 import javax.inject.Inject;
 import javax.inject.Qualifier;
 
-import com.jslib.injector.IInjector;
-import com.jslib.injector.IProvisionInvocation;
-import com.jslib.injector.ITypedProvider;
-import com.jslib.injector.Key;
-import com.jslib.injector.ProvisionException;
-
+import js.injector.IInjector;
+import js.injector.IProvisionInvocation;
+import js.injector.ITypedProvider;
+import js.injector.Key;
+import js.injector.ProvisionException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.util.Params;

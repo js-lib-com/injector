@@ -1,4 +1,4 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -10,8 +10,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.jslib.injector.ProvisionException;
 import com.jslib.injector.fixture.IService;
+
+import js.injector.ProvisionException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceProviderTest {

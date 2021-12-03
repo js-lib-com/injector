@@ -1,15 +1,15 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Provider;
 
-import com.jslib.injector.IScope;
-import com.jslib.injector.Key;
-import com.jslib.injector.ScopedProvider;
+import js.injector.IScope;
+import js.injector.Key;
+import js.injector.ScopedProvider;
 
-public class ThreadScopeProvider<T> extends ScopedProvider<T>
+class ThreadScopeProvider<T> extends ScopedProvider<T>
 {
   private static final Map<Key<?>, ThreadLocal<?>> pool = new HashMap<>();
 

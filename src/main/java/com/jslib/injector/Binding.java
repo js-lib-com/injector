@@ -1,10 +1,10 @@
-package com.jslib.injector.impl;
+package com.jslib.injector;
 
 import javax.inject.Provider;
 
-import com.jslib.injector.IBinding;
-import com.jslib.injector.ITypedProvider;
-import com.jslib.injector.Key;
+import js.injector.IBinding;
+import js.injector.ITypedProvider;
+import js.injector.Key;
 
 class Binding<T> implements IBinding<T> {
 	private final Key<T> key;
