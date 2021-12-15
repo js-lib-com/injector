@@ -8,21 +8,34 @@ import javax.inject.Provider;
 import js.injector.IScope;
 import js.injector.Key;
 import js.injector.ScopedProvider;
+import js.log.Log;
+import js.log.LogFactory;
 
 class ThreadScopeProvider<T> extends ScopedProvider<T>
 {
+  private static final Log log = LogFactory.getLog(ThreadScopeProvider.class);
+
   private static final Map<Key<?>, ThreadLocal<?>> pool = new HashMap<>();
 
   public static void clearCache()
   {
+    log.debug("Clear cache.");
     pool.clear();
   }
 
   private final Key<T> key;
 
-  private ThreadScopeProvider(Key<T> key, Provider<T> provider)
+  /**
+   * Construct this thread provider instance. Because is not allowed to nest the scoped providers, throws illegal
+   * argument if given provisioning provider argument is a scoped provider instance.
+   * 
+   * @param key instance key for which this thread provider is created.
+   * @param provisioningProvider wrapped provisioning provider.
+   * @throws IllegalArgumentException if provisioning provider argument is a scoped provider instance.
+   */
+  private ThreadScopeProvider(Key<T> key, Provider<T> provisioningProvider)
   {
-    super(provider);
+    super(provisioningProvider);
     this.key = key;
   }
 
@@ -38,7 +51,7 @@ class ThreadScopeProvider<T> extends ScopedProvider<T>
     final ThreadLocal<T> tls = tls();
     T instance = tls.get();
     if(instance == null) {
-      instance = provider.get();
+      instance = getProvisioningProvider().get();
       tls.set(instance);
     }
     return instance;
@@ -63,7 +76,7 @@ class ThreadScopeProvider<T> extends ScopedProvider<T>
   @Override
   public String toString()
   {
-    return provider.toString() + ":THREAD";
+    return getProvisioningProvider().toString() + ":THREAD";
   }
 
   // --------------------------------------------------------------------------------------------

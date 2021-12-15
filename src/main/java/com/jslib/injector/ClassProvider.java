@@ -105,6 +105,7 @@ class ClassProvider<T> implements ITypedProvider<T>
         method.invoke(instance);
       }
 
+      log.debug("Create instance for |%s|.", type);
       injector.fireEvent(IProvisionInvocation.create(this, instance));
       return instance;
     }

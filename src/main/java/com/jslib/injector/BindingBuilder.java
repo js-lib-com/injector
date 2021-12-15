@@ -12,7 +12,6 @@ import js.injector.IBindingBuilder;
 import js.injector.IInjector;
 import js.injector.IScope;
 import js.injector.ITypedProvider;
-import js.injector.Names;
 
 class BindingBuilder<T> implements IBindingBuilder<T>
 {
@@ -23,18 +22,6 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   {
     this.injector = injector;
     this.binding = binding;
-  }
-
-  @Override
-  public IBindingBuilder<T> annotatedWith(Annotation qualifier)
-  {
-    return with(qualifier);
-  }
-
-  @Override
-  public IBindingBuilder<T> annotatedWith(Class<? extends Annotation> qualifierType)
-  {
-    return with(qualifierType);
   }
 
   @Override
@@ -55,12 +42,6 @@ class BindingBuilder<T> implements IBindingBuilder<T>
     }
     binding.key().setQualifier(qualifierType);
     return this;
-  }
-
-  @Override
-  public IBindingBuilder<T> named(String name)
-  {
-    return with(Names.named(name));
   }
 
   @Override
@@ -100,22 +81,10 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   }
 
   @Override
-  public IBindingBuilder<T> toProvider(Provider<T> provider)
-  {
-    return provider(provider);
-  }
-
-  @Override
   public IBindingBuilder<T> provider(Provider<T> provider)
   {
     binding.setProvider(provider);
     return this;
-  }
-
-  @Override
-  public IBindingBuilder<T> toProvider(ITypedProvider<T> provider)
-  {
-    return provider(provider);
   }
 
   @Override
@@ -135,13 +104,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> on(URI implementationURL)
   {
-    return on(implementationURL.toString());
-  }
-
-  @Override
-  public IBindingBuilder<T> on(String implementationURL)
-  {
-    binding.setProvider(new RemoteProvider<>(binding.key().type(), implementationURL));
+    binding.setProvider(new RemoteProvider<>(binding.key().type(), implementationURL.toString()));
     return this;
   }
 

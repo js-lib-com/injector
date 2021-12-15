@@ -48,6 +48,9 @@ public class Injector implements IInjector
   public IInjector configure(IModule... modules)
   {
     log.trace("configure(Module...)");
+    if(!bindings.isEmpty()) {
+      throw new IllegalStateException("Injector instance already configured.");
+    }
     for(IModule module : modules) {
       module.configure(this).bindings().forEach(binding -> {
         log.debug("Bind |%s| to provider |%s|.", binding.key(), binding.provider());

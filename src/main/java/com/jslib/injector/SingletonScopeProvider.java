@@ -8,21 +8,34 @@ import javax.inject.Provider;
 import js.injector.IScope;
 import js.injector.Key;
 import js.injector.ScopedProvider;
+import js.log.Log;
+import js.log.LogFactory;
 
 class SingletonScopeProvider<T> extends ScopedProvider<T>
 {
+  private static final Log log = LogFactory.getLog(SingletonScopeProvider.class);
+
   private static final Map<Key<?>, Object> cache = new HashMap<>();
 
   public static void clearCache()
   {
+    log.debug("Clear cache.");
     cache.clear();
   }
 
   private final Key<T> key;
 
-  private SingletonScopeProvider(Key<T> key, Provider<T> provider)
+  /**
+   * Construct this singleton provider instance. Because is not allowed to nest the scoped providers, throws illegal
+   * argument if given provisioning provider argument is a scoped provider instance.
+   * 
+   * @param key instance key for which this singleton provider is created.
+   * @param provisioningProvider wrapped provisioning provider.
+   * @throws IllegalArgumentException if provisioning provider argument is a scoped provider instance.
+   */
+  private SingletonScopeProvider(Key<T> key, Provider<T> provisioningProvider)
   {
-    super(provider);
+    super(provisioningProvider);
     this.key = key;
   }
 
@@ -42,7 +55,7 @@ class SingletonScopeProvider<T> extends ScopedProvider<T>
       synchronized(this) {
         instance = getScopeInstance();
         if(instance == null) {
-          instance = provider.get();
+          instance = getProvisioningProvider().get();
           cache.put(key, instance);
         }
       }
@@ -53,7 +66,7 @@ class SingletonScopeProvider<T> extends ScopedProvider<T>
   @Override
   public String toString()
   {
-    return provider.toString() + ":SINGLETON";
+    return getProvisioningProvider().toString() + ":SINGLETON";
   }
 
   // --------------------------------------------------------------------------------------------
