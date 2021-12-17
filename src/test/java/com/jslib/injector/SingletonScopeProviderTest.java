@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,11 +14,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.injector.SingletonScopeProvider.Factory;
 
+import js.injector.IBinding;
+import js.injector.IInjector;
 import js.injector.Key;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SingletonScopeProviderTest
 {
+  @Mock
+  private IInjector injector;
+  @Mock
+  private IBinding<Object> provisioningBinding;
   @Mock
   private Key<Object> instanceKey;
 
@@ -26,8 +33,11 @@ public class SingletonScopeProviderTest
   @Before
   public void beforeTest()
   {
-    SingletonScopeProvider.Factory<Object> factory=new Factory<>();
-    scopeProvider = (SingletonScopeProvider<Object>)factory.scope(instanceKey, () -> new Object());
+    when(provisioningBinding.key()).thenReturn(instanceKey);
+    when(provisioningBinding.provider()).thenReturn(() -> new Object());
+
+    SingletonScopeProvider.Factory<Object> factory = new Factory<>();
+    scopeProvider = (SingletonScopeProvider<Object>)factory.getScopedProvider(injector, provisioningBinding);
   }
 
   @Test

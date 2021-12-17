@@ -10,8 +10,9 @@ import javax.inject.Scope;
 import js.injector.IBinding;
 import js.injector.IBindingBuilder;
 import js.injector.IInjector;
-import js.injector.IScope;
+import js.injector.IScopeFactory;
 import js.injector.ITypedProvider;
+import js.injector.ScopedProvider;
 
 class BindingBuilder<T> implements IBindingBuilder<T>
 {
@@ -22,6 +23,12 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   {
     this.injector = injector;
     this.binding = binding;
+
+    Provider<T> provider = binding.provider();
+    if(provider != null && provider instanceof ITypedProvider) {
+      Class<? extends T> implementationClass = ((ITypedProvider<T>)provider).type();
+      processScope(implementationClass);
+    }
   }
 
   @Override
@@ -45,10 +52,21 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   }
 
   @Override
-  public IBindingBuilder<T> to(Class<? extends T> type)
+  public IBindingBuilder<T> to(Class<? extends T> implementationClass)
   {
-    binding.setProvider(new ClassProvider<>(injector, type));
+    binding.setProvider(new ClassProvider<>(injector, implementationClass));
+    processScope(implementationClass);
     return this;
+  }
+
+  private void processScope(Class<? extends T> implementationClass)
+  {
+    for(Annotation annotation : implementationClass.getAnnotations()) {
+      if(annotation.annotationType().isAnnotationPresent(Scope.class)) {
+        in(annotation.annotationType());
+        break;
+      }
+    }
   }
 
   @Override
@@ -67,16 +85,19 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> in(Class<? extends Annotation> annotation)
   {
+    if(binding.provider() instanceof ScopedProvider) {
+      throw new IllegalStateException("Scope already set.");
+    }
     if(!annotation.isAnnotationPresent(Scope.class)) {
-      throw new IllegalArgumentException("Not a scope annotation: " + annotation);
+      throw new IllegalArgumentException("Not a scope annotation " + annotation);
     }
 
-    IScope<T> scope = injector.getScope(annotation);
-    if(scope == null) {
+    IScopeFactory<T> scopeFactory = injector.getScopeFactory(annotation);
+    if(scopeFactory == null) {
       throw new IllegalStateException("No scope for annotation " + annotation);
     }
 
-    binding.setProvider(scope.scope(binding.key(), binding.provider()));
+    binding.setProvider(scopeFactory.getScopedProvider(injector, binding));
     return this;
   }
 

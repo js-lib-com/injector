@@ -16,11 +16,10 @@ import js.injector.IInjector;
 import js.injector.IModule;
 import js.injector.IProvisionInvocation;
 import js.injector.IProvisionListener;
-import js.injector.IScope;
+import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.Names;
 import js.injector.ProvisionException;
-import js.injector.ScopedProvider;
 import js.injector.ThreadScoped;
 import js.log.Log;
 import js.log.LogFactory;
@@ -29,7 +28,7 @@ public class Injector implements IInjector
 {
   private static final Log log = LogFactory.getLog(Injector.class);
 
-  private final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
+  private final Map<Class<? extends Annotation>, IScopeFactory<?>> scopeFactories = new HashMap<>();
 
   private final Map<Key<?>, Provider<?>> bindings = new HashMap<>();
 
@@ -40,8 +39,8 @@ public class Injector implements IInjector
     // clear scope caches, just in case injector is recreated inside the same JVM, e.g. unit tests
     clearCache();
 
-    bindScope(Singleton.class, new SingletonScopeProvider.Factory<>());
-    bindScope(ThreadScoped.class, new ThreadScopeProvider.Factory<>());
+    bindScopeFactory(Singleton.class, new SingletonScopeProvider.Factory<>());
+    bindScopeFactory(ThreadScoped.class, new ThreadScopeProvider.Factory<>());
   }
 
   @Override
@@ -97,22 +96,11 @@ public class Injector implements IInjector
     return getInstance(Key.get(type, Names.named(name)));
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public <T> T getScopeInstance(Class<T> type)
+  public <T> Provider<T> getProvider(Class<T> type)
   {
-    Key<T> key = Key.get(type);
-    @SuppressWarnings("unchecked")
-    Provider<T> provider = (Provider<T>)bindings.get(key);
-    if(provider == null) {
-      log.debug("No provider for |%s|.", key);
-      return null;
-    }
-    if(!(provider instanceof ScopedProvider)) {
-      log.debug("Not a scoped provider |%s|.", provider);
-      return null;
-    }
-    ScopedProvider<T> scopedProvider = (ScopedProvider<T>)provider;
-    return scopedProvider.getScopeInstance();
+    return (Provider<T>)bindings.get(Key.get(type));
   }
 
   @Override
@@ -134,20 +122,20 @@ public class Injector implements IInjector
   }
 
   @Override
-  public <T> void bindScope(Class<? extends Annotation> annotation, IScope<T> scope)
+  public <T> void bindScopeFactory(Class<? extends Annotation> annotation, IScopeFactory<T> scope)
   {
     if(!annotation.isAnnotationPresent(Scope.class)) {
       throw new IllegalArgumentException("Not a scope annotation: " + annotation);
     }
     log.debug("Register |%s| to scope |%s|.", annotation, scope);
-    scopes.put(annotation, scope);
+    scopeFactories.put(annotation, scope);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> IScope<T> getScope(Class<? extends Annotation> annotation)
+  public <T> IScopeFactory<T> getScopeFactory(Class<? extends Annotation> annotation)
   {
-    return (IScope<T>)scopes.get(annotation);
+    return (IScopeFactory<T>)scopeFactories.get(annotation);
   }
 
   @Override

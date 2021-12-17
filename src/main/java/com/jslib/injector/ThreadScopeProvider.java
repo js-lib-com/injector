@@ -1,13 +1,17 @@
 package com.jslib.injector;
 
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Provider;
 
-import js.injector.IScope;
+import js.injector.IBinding;
+import js.injector.IInjector;
+import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.ScopedProvider;
+import js.injector.ThreadScoped;
 import js.log.Log;
 import js.log.LogFactory;
 
@@ -46,6 +50,12 @@ class ThreadScopeProvider<T> extends ScopedProvider<T>
   }
 
   @Override
+  public Class<? extends Annotation> getScope()
+  {
+    return ThreadScoped.class;
+  }
+
+  @Override
   public T get()
   {
     final ThreadLocal<T> tls = tls();
@@ -81,12 +91,12 @@ class ThreadScopeProvider<T> extends ScopedProvider<T>
 
   // --------------------------------------------------------------------------------------------
 
-  public static class Factory<T> implements IScope<T>
+  public static class Factory<T> implements IScopeFactory<T>
   {
     @Override
-    public Provider<T> scope(Key<T> key, Provider<T> provider)
+    public Provider<T> getScopedProvider(IInjector injector, IBinding<T> provisioningBinding)
     {
-      return new ThreadScopeProvider<>(key, provider);
+      return new ThreadScopeProvider<>(provisioningBinding.key(), provisioningBinding.provider());
     }
   }
 }

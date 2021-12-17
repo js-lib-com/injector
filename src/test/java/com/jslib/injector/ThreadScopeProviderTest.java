@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,11 +15,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.injector.ThreadScopeProvider.Factory;
 
+import js.injector.IBinding;
+import js.injector.IInjector;
 import js.injector.Key;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ThreadScopeProviderTest
 {
+  @Mock
+  private IInjector injector;
+  @Mock
+  private IBinding<Object> provisioningBinding;
   @Mock
   private Key<Object> instanceKey;
 
@@ -27,8 +34,11 @@ public class ThreadScopeProviderTest
   @Before
   public void beforeTest()
   {
+    when(provisioningBinding.key()).thenReturn(instanceKey);
+    when(provisioningBinding.provider()).thenReturn(() -> new Object());
+
     ThreadScopeProvider.Factory<Object> factory = new Factory<>();
-    provider = (ThreadScopeProvider<Object>)factory.scope(instanceKey, () -> new Object());
+    provider = (ThreadScopeProvider<Object>)factory.getScopedProvider(injector, provisioningBinding);
   }
 
   @Test
