@@ -4,8 +4,6 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 
 import javax.inject.Provider;
-import javax.inject.Qualifier;
-import javax.inject.Scope;
 
 import js.injector.IBinding;
 import js.injector.IBindingBuilder;
@@ -34,7 +32,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> with(Annotation qualifier)
   {
-    if(!qualifier.annotationType().isAnnotationPresent(Qualifier.class)) {
+    if(!IQualifier.isPresent(qualifier)) {
       throw new IllegalArgumentException("Not a qualifier annotation: " + qualifier);
     }
     binding.key().setQualifier(qualifier);
@@ -44,7 +42,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> with(Class<? extends Annotation> qualifierType)
   {
-    if(!qualifierType.isAnnotationPresent(Qualifier.class)) {
+    if(!IQualifier.isPresent(qualifierType)) {
       throw new IllegalArgumentException("Not a qualifier annotation: " + qualifierType);
     }
     binding.key().setQualifier(qualifierType);
@@ -62,7 +60,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   private void processScope(Class<? extends T> implementationClass)
   {
     for(Annotation annotation : implementationClass.getAnnotations()) {
-      if(annotation.annotationType().isAnnotationPresent(Scope.class)) {
+      if(IScope.isPresent(annotation)) {
         in(annotation.annotationType());
         break;
       }
@@ -88,8 +86,8 @@ class BindingBuilder<T> implements IBindingBuilder<T>
     if(binding.provider() instanceof ScopedProvider) {
       throw new IllegalStateException("Scope already set.");
     }
-    if(!annotation.isAnnotationPresent(Scope.class)) {
-      throw new IllegalArgumentException("Not a scope annotation " + annotation);
+    if(!IScope.isPresent(annotation)) {
+      throw new IllegalArgumentException("Not a scope annotation: " + annotation);
     }
 
     IScopeFactory<T> scopeFactory = injector.getScopeFactory(annotation);

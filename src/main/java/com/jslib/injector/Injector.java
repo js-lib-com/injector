@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Provider;
-import javax.inject.Scope;
-import javax.inject.Singleton;
 
 import js.injector.IBindingBuilder;
 import js.injector.IInjector;
@@ -39,7 +37,8 @@ public class Injector implements IInjector
     // clear scope caches, just in case injector is recreated inside the same JVM, e.g. unit tests
     clearCache();
 
-    bindScopeFactory(Singleton.class, new SingletonScopeProvider.Factory<>());
+    bindScopeFactory(jakarta.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
+    bindScopeFactory(javax.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
     bindScopeFactory(ThreadScoped.class, new ThreadScopeProvider.Factory<>());
   }
 
@@ -124,7 +123,7 @@ public class Injector implements IInjector
   @Override
   public <T> void bindScopeFactory(Class<? extends Annotation> annotation, IScopeFactory<T> scope)
   {
-    if(!annotation.isAnnotationPresent(Scope.class)) {
+    if(!IScope.isPresent(annotation)) {
       throw new IllegalArgumentException("Not a scope annotation: " + annotation);
     }
     log.debug("Register |%s| to scope |%s|.", annotation, scope);
