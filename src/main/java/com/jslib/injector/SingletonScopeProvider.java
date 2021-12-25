@@ -1,10 +1,7 @@
 package com.jslib.injector;
 
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import js.injector.IBinding;
@@ -12,42 +9,31 @@ import js.injector.IInjector;
 import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.ScopedProvider;
-import js.log.Log;
-import js.log.LogFactory;
 
 class SingletonScopeProvider<T> extends ScopedProvider<T>
 {
-  private static final Log log = LogFactory.getLog(SingletonScopeProvider.class);
-
-  private static final Map<Key<?>, Object> cache = new HashMap<>();
-
-  public static void clearCache()
-  {
-    log.debug("Clear cache.");
-    cache.clear();
-  }
-
+  private final SingletonCache cache;
   private final Key<T> key;
 
   /**
    * Construct this singleton provider instance. Because is not allowed to nest the scoped providers, throws illegal
    * argument if given provisioning provider argument is a scoped provider instance.
    * 
-   * @param key instance key for which this singleton provider is created.
-   * @param provisioningProvider wrapped provisioning provider.
+   * @param injector parent injector,
+   * @param provisioningBinding binding for provisioning provider.
    * @throws IllegalArgumentException if provisioning provider argument is a scoped provider instance.
    */
-  private SingletonScopeProvider(Key<T> key, Provider<T> provisioningProvider)
+  private SingletonScopeProvider(IInjector injector, IBinding<T> provisioningBinding)
   {
-    super(provisioningProvider);
-    this.key = key;
+    super(provisioningBinding.provider());
+    this.cache = ((Injector)injector).getSingletonCache();
+    this.key = provisioningBinding.key();
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public T getScopeInstance()
   {
-    return (T)cache.get(key);
+    return cache.get(key);
   }
 
   @Override
@@ -56,11 +42,10 @@ class SingletonScopeProvider<T> extends ScopedProvider<T>
     return Singleton.class;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public T get()
   {
-    Object instance = getScopeInstance();
+    T instance = getScopeInstance();
     if(instance == null) {
       synchronized(this) {
         instance = getScopeInstance();
@@ -70,7 +55,7 @@ class SingletonScopeProvider<T> extends ScopedProvider<T>
         }
       }
     }
-    return (T)instance;
+    return instance;
   }
 
   @Override
@@ -84,9 +69,9 @@ class SingletonScopeProvider<T> extends ScopedProvider<T>
   public static class Factory<T> implements IScopeFactory<T>
   {
     @Override
-    public Provider<T> getScopedProvider(IInjector injector, IBinding<T> provisioningBinding)
+    public SingletonScopeProvider<T> getScopedProvider(IInjector injector, IBinding<T> provisioningBinding)
     {
-      return new SingletonScopeProvider<>(provisioningBinding.key(), provisioningBinding.provider());
+      return new SingletonScopeProvider<>(injector, provisioningBinding);
     }
   }
 }

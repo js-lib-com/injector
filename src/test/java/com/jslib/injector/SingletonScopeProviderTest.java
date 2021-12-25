@@ -15,14 +15,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.jslib.injector.SingletonScopeProvider.Factory;
 
 import js.injector.IBinding;
-import js.injector.IInjector;
 import js.injector.Key;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SingletonScopeProviderTest
 {
   @Mock
-  private IInjector injector;
+  private Injector injector;
+  @Mock
+  private SingletonCache singletonCache;
   @Mock
   private IBinding<Object> provisioningBinding;
   @Mock
@@ -33,11 +34,13 @@ public class SingletonScopeProviderTest
   @Before
   public void beforeTest()
   {
+    when(injector.getSingletonCache()).thenReturn(singletonCache);
+    
     when(provisioningBinding.key()).thenReturn(instanceKey);
     when(provisioningBinding.provider()).thenReturn(() -> new Object());
 
     SingletonScopeProvider.Factory<Object> factory = new Factory<>();
-    scopeProvider = (SingletonScopeProvider<Object>)factory.getScopedProvider(injector, provisioningBinding);
+    scopeProvider = factory.getScopedProvider(injector, provisioningBinding);
   }
 
   @Test
@@ -56,7 +59,7 @@ public class SingletonScopeProviderTest
   public void GivenCache_WhenGetScopeInstance_ThenNotNull()
   {
     // given
-    scopeProvider.get();
+    when(singletonCache.get(instanceKey)).thenReturn(new Object());
 
     // when
     Object instance = scopeProvider.getScopeInstance();
@@ -94,6 +97,7 @@ public class SingletonScopeProviderTest
   public void GivenCachedInstance_WhenGetAnotherInstance_ThenEqual()
   {
     // given
+    when(singletonCache.get(instanceKey)).thenReturn(new Object());
     Object instance1 = scopeProvider.get();
 
     // when

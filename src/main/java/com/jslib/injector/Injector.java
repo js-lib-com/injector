@@ -27,6 +27,8 @@ public class Injector implements IInjector
   private static final Log log = LogFactory.getLog(Injector.class);
 
   private final Map<Class<? extends Annotation>, IScopeFactory<?>> scopeFactories = new HashMap<>();
+  
+  private final SingletonCache singletonCache = new SingletonCache();
 
   private final Map<Key<?>, Provider<?>> bindings = new HashMap<>();
 
@@ -34,9 +36,7 @@ public class Injector implements IInjector
 
   public Injector()
   {
-    // clear scope caches, just in case injector is recreated inside the same JVM, e.g. unit tests
-    clearCache();
-
+    log.trace("Injector()");
     bindScopeFactory(jakarta.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
     bindScopeFactory(javax.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
     bindScopeFactory(ThreadScoped.class, new ThreadScopeProvider.Factory<>());
@@ -84,7 +84,7 @@ public class Injector implements IInjector
     @SuppressWarnings("unchecked")
     Provider<T> provider = (Provider<T>)bindings.get(key);
     if(provider == null) {
-      throw new ProvisionException("No provider for " + key);
+      throw new ProvisionException("No injector binding for " + key);
     }
     return provider.get();
   }
@@ -137,10 +137,8 @@ public class Injector implements IInjector
     return (IScopeFactory<T>)scopeFactories.get(annotation);
   }
 
-  @Override
-  public void clearCache()
+  public SingletonCache getSingletonCache()
   {
-    SingletonScopeProvider.clearCache();
-    ThreadScopeProvider.clearCache();
+    return singletonCache;
   }
 }
