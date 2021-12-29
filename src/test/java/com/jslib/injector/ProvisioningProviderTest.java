@@ -10,18 +10,18 @@ import javax.inject.Inject;
 
 import org.junit.Test;
 
-public class ClassProviderTest
+public class ProvisioningProviderTest
 {
   @SuppressWarnings("unused")
-  private ClassProvider<Person> provider;
+  private ProvisioningProvider<Person> provider;
 
   @Test
-  public void Given_WhenGetConstructor_Then()
+  public void Given_WhenGetConstructor_ThenNotNull()
   {
     // given
 
     // when
-    Constructor<Person> constructor = ClassProvider.getConstructor(Person.class);
+    Constructor<Person> constructor = ProvisioningProvider.getConstructor(Person.class);
 
     // then
     assertThat(constructor, notNullValue());

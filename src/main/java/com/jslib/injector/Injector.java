@@ -61,7 +61,7 @@ public class Injector implements IInjector
   @Override
   public <T> IBindingBuilder<T> getBindingBuilder(Class<T> type)
   {
-    Binding<T> binding = type.isInterface() ? new Binding<>(type) : new Binding<>(type, new ClassProvider<>(this, type));
+    Binding<T> binding = type.isInterface() ? new Binding<>(type) : new Binding<>(type, new ProvisioningProvider<>(this, type));
     return new BindingBuilder<>(this, binding);
   }
 

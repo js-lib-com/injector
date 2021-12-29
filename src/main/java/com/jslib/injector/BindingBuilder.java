@@ -52,7 +52,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> to(Class<? extends T> implementationClass)
   {
-    binding.setProvider(new ClassProvider<>(injector, implementationClass));
+    binding.setProvider(new ProvisioningProvider<>(injector, implementationClass));
     processScope(implementationClass);
     return this;
   }

@@ -24,9 +24,14 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.util.Params;
 
-class ClassProvider<T> implements ITypedProvider<T>
+/**
+ * Provisioning provider creates new instances every time it is invoked; it has no scope cache.
+ * 
+ * @author Iulian Rotaru
+ */
+class ProvisioningProvider<T> implements ITypedProvider<T>
 {
-  private static final Log log = LogFactory.getLog(ClassProvider.class);
+  private static final Log log = LogFactory.getLog(ProvisioningProvider.class);
 
   /** Thread local storage for dependencies trace stack. Used to prevent circular dependencies. */
   private static ThreadLocal<Stack<Class<?>>> dependenciesStack = new ThreadLocal<>();
@@ -39,7 +44,7 @@ class ClassProvider<T> implements ITypedProvider<T>
   private final List<FieldKey<?>> fields;
   private final List<MethodKey<?>> methods;
 
-  public ClassProvider(IInjector injector, Class<? extends T> type)
+  public ProvisioningProvider(IInjector injector, Class<? extends T> type)
   {
     Params.notNull(injector, "Injector");
     Params.isInstantiable(type, "Type");
