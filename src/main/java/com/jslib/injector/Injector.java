@@ -27,7 +27,7 @@ public class Injector implements IInjector
   private static final Log log = LogFactory.getLog(Injector.class);
 
   private final Map<Class<? extends Annotation>, IScopeFactory<?>> scopeFactories = new HashMap<>();
-  
+
   private final SingletonCache singletonCache = new SingletonCache();
 
   private final Map<Key<?>, Provider<?>> bindings = new HashMap<>();
@@ -49,6 +49,10 @@ public class Injector implements IInjector
     if(!bindings.isEmpty()) {
       throw new IllegalStateException("Injector instance already configured.");
     }
+
+    // make this injector instance available via its interface
+    bindings.put(Key.get(IInjector.class), new InstanceProvider<>(this));
+    
     for(IModule module : modules) {
       module.configure(this).bindings().forEach(binding -> {
         log.debug("Bind |%s| to provider |%s|.", binding.key(), binding.provider());

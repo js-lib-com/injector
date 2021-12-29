@@ -24,7 +24,7 @@ public class CircularDependencyTest
   @Before
   public void beforeTest()
   {
-    injector = new Injector().configure();
+    injector = new Injector();
   }
 
   @Test
