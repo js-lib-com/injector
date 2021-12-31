@@ -83,11 +83,12 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> in(Class<? extends Annotation> annotation)
   {
-    if(binding.provider() instanceof ScopedProvider) {
-      throw new IllegalStateException("Scope already set.");
-    }
     if(!IScope.isPresent(annotation)) {
       throw new IllegalArgumentException("Not a scope annotation: " + annotation);
+    }
+
+    if(binding.provider() instanceof ScopedProvider) {
+      binding.setProvider(((ScopedProvider<T>)binding.provider()).getProvisioningProvider());
     }
 
     IScopeFactory<T> scopeFactory = injector.getScopeFactory(annotation);

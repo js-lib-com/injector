@@ -2,8 +2,7 @@ package com.jslib.injector;
 
 import java.lang.annotation.Annotation;
 
-import javax.inject.Singleton;
-
+import jakarta.inject.Singleton;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IScopeFactory;
