@@ -1,7 +1,6 @@
 package com.jslib.injector;
 
-import javax.inject.Provider;
-
+import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.ITypedProvider;
 import js.injector.Key;

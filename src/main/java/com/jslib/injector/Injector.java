@@ -7,8 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Provider;
-
+import jakarta.inject.Provider;
 import js.injector.IBindingBuilder;
 import js.injector.IInjector;
 import js.injector.IModule;
