@@ -14,6 +14,15 @@ import js.injector.ThreadScoped;
 import js.log.Log;
 import js.log.LogFactory;
 
+/**
+ * Provider for {@link ThreadScoped} instances, bound to current thread. Thread scoped instance is created on the fly
+ * and reused from cache as long the parent thread is alive.
+ * 
+ * Note that thread scoped instances are bound to current thread only but not inherited by child threads. For this
+ * reason this provider implementation uses {@link ThreadLocal} but not the {@link InheritableThreadLocal}.
+ * 
+ * @author Iulian Rotaru
+ */
 class ThreadScopeProvider<T> extends ScopedProvider<T>
 {
   private static final Log log = LogFactory.getLog(ThreadScopeProvider.class);
@@ -74,6 +83,7 @@ class ThreadScopeProvider<T> extends ScopedProvider<T>
       synchronized(pool) {
         tls = pool.get(key);
         if(tls == null) {
+          // do not use InheritableThreadLocal since thread scoped instance should be bound only to current thread
           tls = new ThreadLocal<>();
           pool.put(key, tls);
         }

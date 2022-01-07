@@ -3,7 +3,7 @@ package com.jslib.injector;
 import java.lang.annotation.Annotation;
 
 /**
- * Meta interface for <code>scope</code> annotations, both {@link jakarta.enterprise.context.NormalScope normal scope}
+ * Meta interface for <code>@Scope</code> annotations, both {@link jakarta.enterprise.context.NormalScope normal scope}
  * and {@link jakarta.inject.Scope pseudo-scopes}. This utility interface supports both Jakarta and Javax packages.
  * 
  * @author Iulian Rotaru

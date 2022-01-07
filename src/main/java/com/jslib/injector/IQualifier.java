@@ -2,6 +2,11 @@ package com.jslib.injector;
 
 import java.lang.annotation.Annotation;
 
+/**
+ * Meta interface for <code>@Qualifier</code> annotation, both Jakarta and Javax packages.
+ * 
+ * @author Iulian Rotaru
+ */
 public interface IQualifier
 {
 
@@ -14,6 +19,5 @@ public interface IQualifier
   {
     return annotation.isAnnotationPresent(jakarta.inject.Qualifier.class) || annotation.isAnnotationPresent(javax.inject.Qualifier.class);
   }
-
 
 }
