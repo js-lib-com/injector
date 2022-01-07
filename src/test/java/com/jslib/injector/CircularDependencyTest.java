@@ -1,8 +1,9 @@
 package com.jslib.injector;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.startsWith;
 
 import javax.inject.Inject;
 
@@ -14,6 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.jslib.injector.fixture.TestModule;
 
 import js.injector.IInjector;
+import js.injector.ProvisionException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CircularDependencyTest
@@ -38,13 +40,13 @@ public class CircularDependencyTest
     try {
       injector.getInstance(FieldService.class);
     }
-    catch(IllegalStateException e) {
+    catch(ProvisionException e) {
       exception = e.getMessage();
     }
 
     // then
     assertThat(exception, notNullValue());
-    assertThat(exception, startsWith("Circular dependency"));
+    assertThat(exception, containsString("Circular dependency"));
   }
 
   @Test
@@ -64,7 +66,7 @@ public class CircularDependencyTest
 
     // then
     assertThat(exception, notNullValue());
-    assertThat(exception, startsWith("Circular dependency"));
+    assertThat(exception, containsString("Circular dependency"));
   }
 
   @Test
@@ -78,13 +80,13 @@ public class CircularDependencyTest
     try {
       injector.getInstance(MethodService.class);
     }
-    catch(IllegalStateException e) {
+    catch(ProvisionException e) {
       exception = e.getMessage();
     }
 
     // then
     assertThat(exception, notNullValue());
-    assertThat(exception, startsWith("Circular dependency"));
+    assertThat(exception, containsString("Circular dependency"));
   }
 
   @Test
@@ -98,13 +100,13 @@ public class CircularDependencyTest
     try {
       injector.getInstance(Grandfather.class);
     }
-    catch(IllegalStateException e) {
+    catch(ProvisionException e) {
       exception = e.getMessage();
     }
 
     // then
     assertThat(exception, notNullValue());
-    assertThat(exception, startsWith("Circular dependency"));
+    assertThat(exception, containsString("Circular dependency"));
   }
 
   // ----------------------------------------------------------------------------------------------

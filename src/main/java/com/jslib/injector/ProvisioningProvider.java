@@ -12,9 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import javax.inject.Inject;
-import javax.inject.Qualifier;
-
+import jakarta.inject.Inject;
+import jakarta.inject.Qualifier;
 import js.injector.IInjector;
 import js.injector.IProvisionInvocation;
 import js.injector.ITypedProvider;
@@ -223,7 +222,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
    */
   private static boolean isInjected(AnnotatedElement element)
   {
-    return element.getAnnotation(Inject.class) != null;
+    return IInject.isPresent(element);
   }
 
   /**
@@ -236,7 +235,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   private static Annotation getQualifier(AnnotatedElement element)
   {
     for(Annotation annotation : element.getAnnotations()) {
-      if(annotation.annotationType().isAnnotationPresent(Qualifier.class)) {
+      if(IQualifier.isPresent(annotation)) {
         return annotation;
       }
     }
@@ -256,7 +255,12 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
 
     void set(Object instance) throws IllegalArgumentException, IllegalAccessException
     {
-      field.set(instance, injector.getInstance(key));
+      try {
+        field.set(instance, injector.getInstance(key));
+      }
+      catch(RuntimeException e) {
+        throw new ProvisionException("Fail to inject |%s| to field |%s|. Root cause: %s: %s", key, field, e.getClass().getCanonicalName(), e.getMessage());
+      }
     }
   }
 
@@ -273,7 +277,12 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
 
     void invoke(Object instance) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
+      try {
       method.invoke(instance, injector.getInstance(key));
+      }
+      catch(RuntimeException e) {
+        throw new ProvisionException("Fail to inject |%s| to method |%s|. Root cause: %s: %s", key, method, e.getClass().getCanonicalName(), e.getMessage());
+      }
     }
   }
 }
