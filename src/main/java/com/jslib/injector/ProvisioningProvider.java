@@ -1,5 +1,6 @@
 package com.jslib.injector;
 
+import static java.lang.String.format;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -8,11 +9,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
 import js.injector.IInjector;
 import js.injector.IProvisionInvocation;
@@ -39,7 +43,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   private final Class<? extends T> type;
 
   private final Constructor<? extends T> constructor;
-  private final List<Key<?>> constructorKeys;
+  private final List<ParameterKey<?>> constructorParameters;
   private final List<FieldKey<?>> fields;
   private final List<MethodKey<?>> methods;
 
@@ -52,7 +56,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     this.type = type;
 
     this.constructor = getConstructor(type);
-    this.constructorKeys = getParameterKeys(this.constructor);
+    this.constructorParameters = getParameterKeys(this.constructor);
     this.fields = getFields(type);
     this.methods = getMethods(type);
   }
@@ -78,7 +82,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
         stackTrace.add(type);
 
         StringBuilder builder = new StringBuilder();
-        builder.append("Circular dependency. Dependencies trace follows:\r\n");
+        builder.append(format("Circular dependency on |%s|. Dependencies trace follows:\r\n", type.getName()));
         for(Class<?> stackTraceClass : stackTrace) {
           builder.append("\t- ");
           builder.append(stackTraceClass.getName());
@@ -86,7 +90,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
         }
         log.error(builder.toString());
 
-        throw new IllegalStateException(String.format("Circular dependency on |%s|. See stack trace on logger.", type.getName()));
+        throw new IllegalStateException(format("Circular dependency on |%s|. See stack trace on logger.", type.getName()));
       }
       finally {
         // takes care to current thread stack trace is removed
@@ -97,8 +101,8 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     stackTrace.push(type);
     try {
       List<Object> arguments = new ArrayList<>();
-      for(Key<?> key : constructorKeys) {
-        arguments.add(injector.getInstance(key));
+      for(ParameterKey<?> parameter : constructorParameters) {
+        arguments.add(parameter.value());
       }
       T instance = constructor.newInstance(arguments.toArray());
 
@@ -187,12 +191,12 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     List<MethodKey<?>> methods = new ArrayList<>();
     for(Method method : type.getDeclaredMethods()) {
       if(isInjected(method)) {
-        List<Key<?>> parameterKeys = getParameterKeys(method);
+        List<ParameterKey<?>> parameterKeys = getParameterKeys(method);
         if(parameterKeys.size() != 1) {
           throw new IllegalArgumentException("Invalid inject method " + method);
         }
         method.setAccessible(true);
-        methods.add(new MethodKey<>(method, parameterKeys.get(0)));
+        methods.add(new MethodKey<>(method, parameterKeys.get(0).key));
       }
     }
     return methods;
@@ -205,11 +209,11 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
    * @param executable executable element: constructor or method.
    * @return executable parameter keys.
    */
-  private static List<Key<?>> getParameterKeys(Executable executable)
+  private List<ParameterKey<?>> getParameterKeys(Executable executable)
   {
-    List<Key<?>> keys = new ArrayList<>();
+    List<ParameterKey<?>> keys = new ArrayList<>();
     for(Parameter parameter : executable.getParameters()) {
-      keys.add(Key.get(parameter.getType(), getQualifier(parameter)));
+      keys.add(new ParameterKey<>(parameter, Key.get(parameter.getType(), getQualifier(parameter))));
     }
     return keys;
   }
@@ -242,10 +246,38 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     return null;
   }
 
+  private static Class<?> getTypeArgument(Type type)
+  {
+    if(!(type instanceof ParameterizedType)) {
+      throw new ProvisionException("Missing parameter argument from provider.");
+    }
+    return (Class<?>)((ParameterizedType)type).getActualTypeArguments()[0];
+  }
+
+  private class ParameterKey<P>
+  {
+    final Parameter parameter;
+    final Key<P> key;
+
+    public ParameterKey(Parameter parameter, Key<P> key)
+    {
+      this.parameter = parameter;
+      this.key = key;
+    }
+
+    Object value()
+    {
+      if(!parameter.getType().equals(Provider.class)) {
+        return injector.getInstance(key);
+      }
+      return new ProxyProvider<>(injector, key.forType(getTypeArgument(parameter.getParameterizedType())));
+    }
+  }
+
   private class FieldKey<F>
   {
-    Field field;
-    Key<F> key;
+    final Field field;
+    final Key<F> key;
 
     public FieldKey(Field field, Key<F> key)
     {
@@ -256,18 +288,26 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     void set(Object instance) throws IllegalArgumentException, IllegalAccessException
     {
       try {
-        field.set(instance, injector.getInstance(key));
+        Object value = null;
+        if(field.getType().equals(Provider.class)) {
+          value = new ProxyProvider<>(injector, key.forType(getTypeArgument(field.getGenericType())));
+        }
+        else {
+          value = injector.getInstance(key);
+        }
+
+        field.set(instance, value);
       }
       catch(RuntimeException e) {
-        throw new ProvisionException("Fail to inject |%s| to field |%s|. Root cause: %s: %s", key, field, e.getClass().getCanonicalName(), e.getMessage());
+        throw new ProvisionException("Fail to inject |%s| to field |%s:%s|. Root cause: %s: %s", key, field.getDeclaringClass().getCanonicalName(), field.getName(), e.getClass().getCanonicalName(), e.getMessage());
       }
     }
   }
 
   private class MethodKey<M>
   {
-    Method method;
-    Key<M> key;
+    final Method method;
+    final Key<M> key;
 
     public MethodKey(Method method, Key<M> key)
     {
@@ -278,10 +318,19 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     void invoke(Object instance) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
       try {
-      method.invoke(instance, injector.getInstance(key));
+        Object value = null;
+        // method is already validated; it surely has one parameter
+        if(method.getParameterTypes()[0].equals(Provider.class)) {
+          value = new ProxyProvider<>(injector, key.forType(getTypeArgument(method.getGenericParameterTypes()[0])));
+        }
+        else {
+          value = injector.getInstance(key);
+        }
+
+        method.invoke(instance, value);
       }
       catch(RuntimeException e) {
-        throw new ProvisionException("Fail to inject |%s| to method |%s|. Root cause: %s: %s", key, method, e.getClass().getCanonicalName(), e.getMessage());
+        throw new ProvisionException("Fail to inject |%s| to method |%s:%s|. Root cause: %s: %s", key, method.getDeclaringClass().getCanonicalName(), method.getName(), e.getClass().getCanonicalName(), e.getMessage());
       }
     }
   }
