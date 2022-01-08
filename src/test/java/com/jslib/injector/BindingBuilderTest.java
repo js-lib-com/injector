@@ -1,8 +1,9 @@
 package com.jslib.injector;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
 import org.junit.Before;
@@ -11,10 +12,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Singleton;
 import js.injector.IScopeFactory;
 import js.injector.ScopedProvider;
-import js.injector.ThreadScoped;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BindingBuilderTest
@@ -23,16 +24,21 @@ public class BindingBuilderTest
   private Injector injector;
   @Mock
   private Binding<Service> binding;
+  
   @Mock
   private IScopeFactory<Service> scopeFactory;
+  @Mock
+  private ScopedProvider<Service> sessionScoped;
 
   private BindingBuilder<Service> builder;
 
   @Before
   public void beforeTest()
   {
+    doReturn(scopeFactory).when(injector).getScopeFactory(SessionScoped.class);
+    doReturn(sessionScoped).when(scopeFactory).getScopedProvider(any(), any());
+    doReturn(SessionScoped.class).when(sessionScoped).getScope();
     doReturn(new SingletonScopeProvider.Factory<>()).when(injector).getScopeFactory(Singleton.class);
-    doReturn(new ThreadScopeProvider.Factory<>()).when(injector).getScopeFactory(ThreadScoped.class);
 
     builder = new BindingBuilder<>(injector, new Binding<>(Service.class));
   }
@@ -42,7 +48,7 @@ public class BindingBuilderTest
   {
     // given
     builder.to(Service.class);
-    assertThat(((ScopedProvider<Service>)builder.getBinding().provider()).getScope(), equalTo(ThreadScoped.class));
+    assertThat(((ScopedProvider<Service>)builder.getBinding().provider()).getScope(), equalTo(SessionScoped.class));
 
     // when
     builder.in(Singleton.class);
@@ -62,7 +68,7 @@ public class BindingBuilderTest
     // then
   }
 
-  @ThreadScoped
+  @SessionScoped
   private static class Service
   {
 

@@ -17,7 +17,6 @@ import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.Names;
 import js.injector.ProvisionException;
-import js.injector.ThreadScoped;
 import js.log.Log;
 import js.log.LogFactory;
 
@@ -36,9 +35,12 @@ public class Injector implements IInjector
   public Injector()
   {
     log.trace("Injector()");
+
     bindScopeFactory(jakarta.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
+    bindScopeFactory(jakarta.enterprise.context.ApplicationScoped.class, new SingletonScopeProvider.Factory<>());
+
     bindScopeFactory(javax.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
-    bindScopeFactory(ThreadScoped.class, new ThreadScopeProvider.Factory<>());
+    bindScopeFactory(javax.enterprise.context.ApplicationScoped.class, new SingletonScopeProvider.Factory<>());
   }
 
   @Override
@@ -51,7 +53,7 @@ public class Injector implements IInjector
 
     // make this injector instance available via its interface
     bindings.put(Key.get(IInjector.class), new InstanceProvider<>(this));
-    
+
     for(IModule module : modules) {
       module.configure(this).bindings().forEach(binding -> {
         log.debug("Bind |%s| to provider |%s|.", binding.key(), binding.provider());
