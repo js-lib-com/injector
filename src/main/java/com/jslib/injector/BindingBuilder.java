@@ -56,14 +56,22 @@ class BindingBuilder<T> implements IBindingBuilder<T>
     return this;
   }
 
-  private void processScope(Class<? extends T> implementationClass)
+  private boolean processScope(Class<?> implementationClass)
   {
     for(Annotation annotation : implementationClass.getAnnotations()) {
       if(IScope.isPresent(annotation)) {
         in(annotation.annotationType());
-        break;
+        return true;
       }
     }
+
+    for(Class<?> interfaceClass : implementationClass.getInterfaces()) {
+      if(processScope(interfaceClass)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   @Override

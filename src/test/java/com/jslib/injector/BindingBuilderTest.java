@@ -24,7 +24,7 @@ public class BindingBuilderTest
   private Injector injector;
   @Mock
   private Binding<Service> binding;
-  
+
   @Mock
   private IScopeFactory<Service> scopeFactory;
   @Mock
@@ -69,8 +69,11 @@ public class BindingBuilderTest
   }
 
   @SessionScoped
-  private static class Service
+  private static interface IService
   {
+  }
 
+  private static class Service implements IService
+  {
   }
 }
