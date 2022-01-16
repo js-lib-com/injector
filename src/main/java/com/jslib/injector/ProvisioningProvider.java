@@ -1,6 +1,5 @@
 package com.jslib.injector;
 
-import static java.lang.String.format;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
@@ -13,9 +12,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
-import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
 import js.injector.IInjector;
@@ -35,9 +32,6 @@ import js.util.Params;
 class ProvisioningProvider<T> implements ITypedProvider<T>
 {
   private static final Log log = LogFactory.getLog(ProvisioningProvider.class);
-
-  /** Thread local storage for dependencies trace stack. Used to prevent circular dependencies. */
-  private static ThreadLocal<Stack<Class<?>>> dependenciesStack = new ThreadLocal<>();
 
   private final IInjector injector;
   private final Class<? extends T> type;
@@ -70,36 +64,10 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   @Override
   public T get()
   {
-    Stack<Class<?>> stackTrace = dependenciesStack.get();
-    if(stackTrace == null) {
-      stackTrace = new Stack<>();
-      dependenciesStack.set(stackTrace);
-    }
+    try (CircularDependencyGuard guard = new CircularDependencyGuard()) {
+      // guard pop is performed by AutoCloseable#close()
+      guard.push(type);
 
-    if(stackTrace.contains(type)) {
-      try {
-        // add current dependency class to reveal what dependency from stack is circular
-        stackTrace.add(type);
-
-        StringBuilder builder = new StringBuilder();
-        builder.append(format("Circular dependency on |%s|. Dependencies trace follows:\r\n", type.getName()));
-        for(Class<?> stackTraceClass : stackTrace) {
-          builder.append("\t- ");
-          builder.append(stackTraceClass.getName());
-          builder.append("\r\n");
-        }
-        log.error(builder.toString());
-
-        throw new IllegalStateException(format("Circular dependency on |%s|. See stack trace on logger.", type.getName()));
-      }
-      finally {
-        // takes care to current thread stack trace is removed
-        dependenciesStack.remove();
-      }
-    }
-
-    stackTrace.push(type);
-    try {
       List<Object> arguments = new ArrayList<>();
       for(ParameterKey<?> parameter : constructorParameters) {
         arguments.add(parameter.value());
@@ -121,11 +89,6 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
       log.error(e);
       throw new ProvisionException(e);
     }
-    finally {
-      stackTrace.pop();
-      // do not remove stack trace after outermost call finished, i.e. when stack trace is empty
-      // leave it on thread local for reuse, in order to avoid unnecessary object creation
-    }
   }
 
   @Override
@@ -138,9 +101,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   {
     @SuppressWarnings("unchecked")
     Constructor<T>[] declaredConstructors = (Constructor<T>[])type.getDeclaredConstructors();
-    if(declaredConstructors.length == 0) {
-      throw new ProvisionException("Invalid implementation class |%s|. Missing constructor.", type);
-    }
+    assert declaredConstructors.length > 0;
     Constructor<T> defaultConstructor = null;
     Constructor<T> constructor = null;
 
@@ -152,16 +113,18 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
         continue;
       }
 
-      if(isInjected(declaredConstructor)) {
+      if(IInject.isPresent(declaredConstructor)) {
+        if(constructor != null) {
+          throw new ProvisionException("Invalid implementation class |%s|. Multiple constructors marked with @Inject.", type);
+        }
         constructor = declaredConstructor;
-        break;
+        continue;
       }
 
-      if(declaredConstructor.getParameters().length == 0) {
+      if(declaredConstructor.getParameterCount() == 0) {
         defaultConstructor = declaredConstructor;
         continue;
       }
-      constructor = declaredConstructor;
     }
 
     if(constructor == null) {
@@ -178,7 +141,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   {
     List<FieldKey<?>> fields = new ArrayList<>();
     for(Field field : type.getDeclaredFields()) {
-      if(isInjected(field)) {
+      if(IInject.isPresent(field)) {
         field.setAccessible(true);
         fields.add(new FieldKey<>(field, Key.get(field.getType(), getQualifier(field))));
       }
@@ -190,7 +153,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   {
     List<MethodKey<?>> methods = new ArrayList<>();
     for(Method method : type.getDeclaredMethods()) {
-      if(isInjected(method)) {
+      if(IInject.isPresent(method)) {
         List<ParameterKey<?>> parameterKeys = getParameterKeys(method);
         if(parameterKeys.size() != 1) {
           throw new IllegalArgumentException("Invalid inject method " + method);
@@ -216,17 +179,6 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
       keys.add(new ParameterKey<>(parameter, Key.get(parameter.getType(), getQualifier(parameter))));
     }
     return keys;
-  }
-
-  /**
-   * Test if annotated element has {@link Inject} annotation.
-   * 
-   * @param element annotated element: constructor, method or field.
-   * @return true if annotated element has {@link Inject} annotation.
-   */
-  private static boolean isInjected(AnnotatedElement element)
-  {
-    return IInject.isPresent(element);
   }
 
   /**
