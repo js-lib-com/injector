@@ -13,6 +13,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
 import js.injector.IInjector;
@@ -113,7 +114,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
         continue;
       }
 
-      if(IInject.isPresent(declaredConstructor)) {
+      if(declaredConstructor.isAnnotationPresent(Inject.class)) {
         if(constructor != null) {
           throw new ProvisionException("Invalid implementation class |%s|. Multiple constructors marked with @Inject.", type);
         }
@@ -141,7 +142,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   {
     List<FieldKey<?>> fields = new ArrayList<>();
     for(Field field : type.getDeclaredFields()) {
-      if(IInject.isPresent(field)) {
+      if(field.isAnnotationPresent(Inject.class)) {
         field.setAccessible(true);
         fields.add(new FieldKey<>(field, Key.get(field.getType(), getQualifier(field))));
       }
@@ -153,7 +154,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   {
     List<MethodKey<?>> methods = new ArrayList<>();
     for(Method method : type.getDeclaredMethods()) {
-      if(IInject.isPresent(method)) {
+      if(method.isAnnotationPresent(Inject.class)) {
         List<ParameterKey<?>> parameterKeys = getParameterKeys(method);
         if(parameterKeys.size() != 1) {
           throw new IllegalArgumentException("Invalid inject method " + method);
@@ -191,7 +192,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   private static Annotation getQualifier(AnnotatedElement element)
   {
     for(Annotation annotation : element.getAnnotations()) {
-      if(IQualifier.isPresent(annotation)) {
+      if(annotation.annotationType().isAnnotationPresent(Qualifier.class)) {
         return annotation;
       }
     }

@@ -1,15 +1,13 @@
 package com.jslib.injector;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
-
-import javax.inject.Inject;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import jakarta.inject.Inject;
 import js.injector.AbstractModule;
 import js.injector.IInjector;
 import js.injector.Key;

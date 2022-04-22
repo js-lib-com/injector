@@ -7,7 +7,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.NormalScope;
 import jakarta.inject.Provider;
+import jakarta.inject.Scope;
+import jakarta.inject.Singleton;
 import js.injector.IBindingBuilder;
 import js.injector.IInjector;
 import js.injector.IModule;
@@ -35,12 +39,8 @@ public class Injector implements IInjector
   public Injector()
   {
     log.trace("Injector()");
-
-    bindScopeFactory(jakarta.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
-    bindScopeFactory(jakarta.enterprise.context.ApplicationScoped.class, new SingletonScopeProvider.Factory<>());
-
-    bindScopeFactory(javax.inject.Singleton.class, new SingletonScopeProvider.Factory<>());
-    bindScopeFactory(javax.enterprise.context.ApplicationScoped.class, new SingletonScopeProvider.Factory<>());
+    bindScopeFactory(Singleton.class, new SingletonScopeProvider.Factory<>());
+    bindScopeFactory(ApplicationScoped.class, new SingletonScopeProvider.Factory<>());
   }
 
   @Override
@@ -128,7 +128,7 @@ public class Injector implements IInjector
   @Override
   public <T> void bindScopeFactory(Class<? extends Annotation> annotation, IScopeFactory<T> scope)
   {
-    if(!IScope.isPresent(annotation)) {
+    if(!annotation.isAnnotationPresent(Scope.class) && !annotation.isAnnotationPresent(NormalScope.class)) {
       throw new IllegalArgumentException("Not a scope annotation: " + annotation);
     }
     log.debug("Register |%s| to scope |%s|.", annotation, scope);

@@ -3,7 +3,10 @@ package com.jslib.injector;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 
+import jakarta.enterprise.context.NormalScope;
 import jakarta.inject.Provider;
+import jakarta.inject.Qualifier;
+import jakarta.inject.Scope;
 import js.injector.IBinding;
 import js.injector.IBindingBuilder;
 import js.injector.IInjector;
@@ -31,7 +34,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> with(Annotation qualifier)
   {
-    if(!IQualifier.isPresent(qualifier)) {
+    if(!qualifier.annotationType().isAnnotationPresent(Qualifier.class)) {
       throw new IllegalArgumentException("Not a qualifier annotation: " + qualifier);
     }
     binding.key().setQualifier(qualifier);
@@ -41,7 +44,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> with(Class<? extends Annotation> qualifierType)
   {
-    if(!IQualifier.isPresent(qualifierType)) {
+    if(!qualifierType.isAnnotationPresent(Qualifier.class)) {
       throw new IllegalArgumentException("Not a qualifier annotation: " + qualifierType);
     }
     binding.key().setQualifier(qualifierType);
@@ -59,7 +62,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   private boolean processScope(Class<?> implementationClass)
   {
     for(Annotation annotation : implementationClass.getAnnotations()) {
-      if(IScope.isPresent(annotation)) {
+      if(annotation.annotationType().isAnnotationPresent(Scope.class) || annotation.annotationType().isAnnotationPresent(NormalScope.class)) {
         in(annotation.annotationType());
         return true;
       }
@@ -90,7 +93,7 @@ class BindingBuilder<T> implements IBindingBuilder<T>
   @Override
   public IBindingBuilder<T> in(Class<? extends Annotation> annotation)
   {
-    if(!IScope.isPresent(annotation)) {
+    if(!annotation.isAnnotationPresent(Scope.class) && !annotation.isAnnotationPresent(NormalScope.class)) {
       throw new IllegalArgumentException("Not a scope annotation: " + annotation);
     }
 

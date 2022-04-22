@@ -5,8 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 
-import javax.inject.Inject;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.injector.fixture.TestModule;
 
+import jakarta.inject.Inject;
 import js.injector.IInjector;
 import js.injector.ProvisionException;
 

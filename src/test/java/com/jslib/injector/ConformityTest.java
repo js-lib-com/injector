@@ -3,13 +3,12 @@ package com.jslib.injector;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
-import javax.inject.Inject;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jslib.injector.fixture.TestModule;
 
+import jakarta.inject.Inject;
 import js.injector.IInjector;
 
 public class ConformityTest
