@@ -87,7 +87,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
       return instance;
     }
     catch(InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      log.error(e);
+      log.dump(String.format("Provider fails to create instance of type |%s|: ", type.getCanonicalName()), e);
       throw new ProvisionException(e);
     }
   }
