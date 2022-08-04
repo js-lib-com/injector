@@ -4,8 +4,8 @@ import static java.lang.String.format;
 
 import java.util.Stack;
 
-import js.log.Log;
-import js.log.LogFactory;
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
 
 class CircularDependencyGuard implements AutoCloseable
 {

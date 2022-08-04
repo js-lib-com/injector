@@ -7,6 +7,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.NormalScope;
 import jakarta.inject.Provider;
@@ -21,8 +24,6 @@ import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.Names;
 import js.injector.ProvisionException;
-import js.log.Log;
-import js.log.LogFactory;
 
 public class Injector implements IInjector
 {

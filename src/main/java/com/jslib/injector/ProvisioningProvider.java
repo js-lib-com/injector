@@ -13,6 +13,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
@@ -21,8 +24,6 @@ import js.injector.IProvisionInvocation;
 import js.injector.ITypedProvider;
 import js.injector.Key;
 import js.injector.ProvisionException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.util.Params;
 
 /**
