@@ -10,11 +10,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.jslib.api.injector.IInjector;
+import com.jslib.api.injector.ProvisionException;
 import com.jslib.injector.fixture.TestModule;
 
 import jakarta.inject.Inject;
-import js.injector.IInjector;
-import js.injector.ProvisionException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CircularDependencyTest

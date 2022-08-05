@@ -7,10 +7,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jslib.api.injector.AbstractModule;
+import com.jslib.api.injector.IInjector;
+
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
-import js.injector.AbstractModule;
-import js.injector.IInjector;
 
 public class ProxyProviderTest
 {

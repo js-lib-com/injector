@@ -12,10 +12,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.jslib.api.injector.IScopeFactory;
+import com.jslib.api.injector.ScopedProvider;
+
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Singleton;
-import js.injector.IScopeFactory;
-import js.injector.ScopedProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BindingBuilderTest

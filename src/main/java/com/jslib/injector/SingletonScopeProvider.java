@@ -2,12 +2,13 @@ package com.jslib.injector;
 
 import java.lang.annotation.Annotation;
 
+import com.jslib.api.injector.IBinding;
+import com.jslib.api.injector.IInjector;
+import com.jslib.api.injector.IScopeFactory;
+import com.jslib.api.injector.Key;
+import com.jslib.api.injector.ScopedProvider;
+
 import jakarta.inject.Singleton;
-import js.injector.IBinding;
-import js.injector.IInjector;
-import js.injector.IScopeFactory;
-import js.injector.Key;
-import js.injector.ScopedProvider;
 
 class SingletonScopeProvider<T> extends ScopedProvider<T>
 {

@@ -12,10 +12,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.jslib.api.injector.IBinding;
+import com.jslib.api.injector.Key;
 import com.jslib.injector.SingletonScopeProvider.Factory;
-
-import js.injector.IBinding;
-import js.injector.Key;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SingletonScopeProviderTest

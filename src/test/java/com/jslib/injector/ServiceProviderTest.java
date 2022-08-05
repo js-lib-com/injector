@@ -10,9 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.jslib.api.injector.ProvisionException;
 import com.jslib.injector.fixture.IService;
-
-import js.injector.ProvisionException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceProviderTest {

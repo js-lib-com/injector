@@ -8,8 +8,9 @@ import java.lang.reflect.Constructor;
 
 import org.junit.Test;
 
+import com.jslib.api.injector.ProvisionException;
+
 import jakarta.inject.Inject;
-import js.injector.ProvisionException;
 
 @SuppressWarnings("unused")
 public class ProvisioningProviderConstructorTest

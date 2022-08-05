@@ -7,6 +7,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.jslib.api.injector.IBindingBuilder;
+import com.jslib.api.injector.IInjector;
+import com.jslib.api.injector.IModule;
+import com.jslib.api.injector.IProvisionInvocation;
+import com.jslib.api.injector.IProvisionListener;
+import com.jslib.api.injector.IScopeFactory;
+import com.jslib.api.injector.Key;
+import com.jslib.api.injector.Names;
+import com.jslib.api.injector.ProvisionException;
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 
@@ -15,15 +24,6 @@ import jakarta.enterprise.context.NormalScope;
 import jakarta.inject.Provider;
 import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
-import js.injector.IBindingBuilder;
-import js.injector.IInjector;
-import js.injector.IModule;
-import js.injector.IProvisionInvocation;
-import js.injector.IProvisionListener;
-import js.injector.IScopeFactory;
-import js.injector.Key;
-import js.injector.Names;
-import js.injector.ProvisionException;
 
 public class Injector implements IInjector
 {

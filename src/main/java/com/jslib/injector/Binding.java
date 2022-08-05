@@ -1,9 +1,10 @@
 package com.jslib.injector;
 
+import com.jslib.api.injector.IBinding;
+import com.jslib.api.injector.ITypedProvider;
+import com.jslib.api.injector.Key;
+
 import jakarta.inject.Provider;
-import js.injector.IBinding;
-import js.injector.ITypedProvider;
-import js.injector.Key;
 
 class Binding<T> implements IBinding<T>
 {

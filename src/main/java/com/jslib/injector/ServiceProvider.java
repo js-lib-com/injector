@@ -1,10 +1,10 @@
 package com.jslib.injector;
 
-import js.injector.IProvisionInvocation;
-import js.injector.ITypedProvider;
-import js.injector.ProvisionException;
-import js.lang.NoProviderException;
-import js.util.Classes;
+import com.jslib.api.injector.IProvisionInvocation;
+import com.jslib.api.injector.ITypedProvider;
+import com.jslib.api.injector.ProvisionException;
+import com.jslib.lang.NoProviderException;
+import com.jslib.util.Classes;
 
 /**
  * Load instance using Java services loader. This provider is a provisioning one that creates a new instance every time

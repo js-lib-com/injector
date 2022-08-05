@@ -4,16 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import com.jslib.api.injector.ITypedProvider;
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
-
-import js.injector.ITypedProvider;
-import js.lang.BugError;
-import js.rmi.RemoteFactory;
-import js.rmi.RemoteFactoryProvider;
-import js.rmi.UnsupportedProtocolException;
-import js.util.Params;
-import js.util.Strings;
+import com.jslib.lang.BugError;
+import com.jslib.rmi.RemoteFactory;
+import com.jslib.rmi.RemoteFactoryProvider;
+import com.jslib.rmi.UnsupportedProtocolException;
+import com.jslib.util.Params;
+import com.jslib.util.Strings;
 
 class RemoteProvider<T> implements ITypedProvider<T>
 {

@@ -3,7 +3,7 @@ package com.jslib.injector;
 import java.util.HashMap;
 import java.util.Map;
 
-import js.injector.Key;
+import com.jslib.api.injector.Key;
 
 class SingletonCache
 {

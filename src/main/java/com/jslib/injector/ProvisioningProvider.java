@@ -13,18 +13,18 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jslib.api.injector.IInjector;
+import com.jslib.api.injector.IProvisionInvocation;
+import com.jslib.api.injector.ITypedProvider;
+import com.jslib.api.injector.Key;
+import com.jslib.api.injector.ProvisionException;
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
+import com.jslib.util.Params;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
-import js.injector.IInjector;
-import js.injector.IProvisionInvocation;
-import js.injector.ITypedProvider;
-import js.injector.Key;
-import js.injector.ProvisionException;
-import js.util.Params;
 
 /**
  * Provisioning provider creates new instances every time it is invoked; it has no scope cache.

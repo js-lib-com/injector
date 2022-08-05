@@ -1,8 +1,9 @@
 package com.jslib.injector;
 
+import com.jslib.api.injector.IInjector;
+import com.jslib.api.injector.Key;
+
 import jakarta.inject.Provider;
-import js.injector.IInjector;
-import js.injector.Key;
 
 public class ProxyProvider<T> implements Provider<T>
 {

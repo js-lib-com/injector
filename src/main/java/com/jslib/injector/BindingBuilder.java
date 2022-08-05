@@ -3,16 +3,17 @@ package com.jslib.injector;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 
+import com.jslib.api.injector.IBinding;
+import com.jslib.api.injector.IBindingBuilder;
+import com.jslib.api.injector.IInjector;
+import com.jslib.api.injector.IScopeFactory;
+import com.jslib.api.injector.ITypedProvider;
+import com.jslib.api.injector.ScopedProvider;
+
 import jakarta.enterprise.context.NormalScope;
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
 import jakarta.inject.Scope;
-import js.injector.IBinding;
-import js.injector.IBindingBuilder;
-import js.injector.IInjector;
-import js.injector.IScopeFactory;
-import js.injector.ITypedProvider;
-import js.injector.ScopedProvider;
 
 class BindingBuilder<T> implements IBindingBuilder<T>
 {
