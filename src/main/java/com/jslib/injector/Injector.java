@@ -57,7 +57,7 @@ public class Injector implements IInjector
 
     for(IModule module : modules) {
       module.configure(this).bindings().forEach(binding -> {
-        log.debug("Bind |%s| to provider |%s|.", binding.key(), binding.provider());
+        log.debug("Bind |{binding_key}| to provider |{binding_provider}|.", binding.key(), binding.provider());
         bindings.put(binding.key(), binding.provider());
       });
     }
@@ -132,7 +132,7 @@ public class Injector implements IInjector
     if(!annotation.isAnnotationPresent(Scope.class) && !annotation.isAnnotationPresent(NormalScope.class)) {
       throw new IllegalArgumentException("Not a scope annotation: " + annotation);
     }
-    log.debug("Register |%s| to scope |%s|.", annotation, scope);
+    log.debug("Register |{java_annotation}| to scope |{scope_factory}|.", annotation, scope);
     scopeFactories.put(annotation, scope);
   }
 

@@ -83,12 +83,12 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
         method.invoke(instance);
       }
 
-      log.debug("Create instance for |%s|.", type);
+      log.trace("Create instance {java_type}.", type);
       injector.fireEvent(IProvisionInvocation.create(this, instance));
       return instance;
     }
     catch(InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      log.dump(String.format("Provider fails to create instance of type |%s|: ", type.getCanonicalName()), e);
+      log.dump(String.format("Provider fails to create instance %s:", type.getCanonicalName()), e);
       throw new ProvisionException(e);
     }
   }
