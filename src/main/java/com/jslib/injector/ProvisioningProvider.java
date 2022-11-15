@@ -41,7 +41,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
   private final Constructor<? extends T> constructor;
   private final List<ParameterKey<?>> constructorParameters;
   private final List<FieldKey<?>> fields;
-  private final List<MethodKey<?>> methods;
+  private final List<MethodKey> methods;
 
   public ProvisioningProvider(IInjector injector, Class<? extends T> type)
   {
@@ -51,10 +51,10 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     this.injector = injector;
     this.type = type;
 
-    this.constructor = getConstructor(type);
-    this.constructorParameters = getParameterKeys(this.constructor);
-    this.fields = getFields(type);
-    this.methods = getMethods(type);
+    this.constructor = constructor(type);
+    this.constructorParameters = parameterKeys(this.constructor);
+    this.fields = fields(type);
+    this.methods = methods(type);
   }
 
   @Override
@@ -79,7 +79,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
       for(FieldKey<?> field : fields) {
         field.set(instance);
       }
-      for(MethodKey<?> method : methods) {
+      for(MethodKey method : methods) {
         method.invoke(instance);
       }
 
@@ -99,7 +99,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     return type.getCanonicalName() + ":CLASS";
   }
 
-  static <T> Constructor<T> getConstructor(Class<T> type)
+  static <T> Constructor<T> constructor(Class<T> type)
   {
     @SuppressWarnings("unchecked")
     Constructor<T>[] declaredConstructors = (Constructor<T>[])type.getDeclaredConstructors();
@@ -139,29 +139,31 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     return constructor;
   }
 
-  private List<FieldKey<?>> getFields(Class<?> type)
+  private List<FieldKey<?>> fields(Class<?> type)
   {
     List<FieldKey<?>> fields = new ArrayList<>();
     for(Field field : type.getDeclaredFields()) {
       if(field.isAnnotationPresent(Inject.class)) {
         field.setAccessible(true);
-        fields.add(new FieldKey<>(field, Key.get(field.getType(), getQualifier(field))));
+        fields.add(new FieldKey<>(field, Key.get(field.getType(), qualifier(field))));
       }
     }
     return fields;
   }
 
-  private List<MethodKey<?>> getMethods(Class<?> type)
+  private List<MethodKey> methods(Class<?> type)
   {
-    List<MethodKey<?>> methods = new ArrayList<>();
+    List<MethodKey> methods = new ArrayList<>();
     for(Method method : type.getDeclaredMethods()) {
       if(method.isAnnotationPresent(Inject.class)) {
-        List<ParameterKey<?>> parameterKeys = getParameterKeys(method);
-        if(parameterKeys.size() != 1) {
-          throw new IllegalArgumentException("Invalid inject method " + method);
+        List<ParameterKey<?>> parameterKeys = parameterKeys(method);
+        Key<?>[] keys = new Key<?>[parameterKeys.size()];
+        for(int i = 0; i < keys.length; ++i) {
+          keys[i] = parameterKeys.get(i).key;
         }
+
         method.setAccessible(true);
-        methods.add(new MethodKey<>(method, parameterKeys.get(0).key));
+        methods.add(new MethodKey(method, keys));
       }
     }
     return methods;
@@ -174,11 +176,11 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
    * @param executable executable element: constructor or method.
    * @return executable parameter keys.
    */
-  private List<ParameterKey<?>> getParameterKeys(Executable executable)
+  private List<ParameterKey<?>> parameterKeys(Executable executable)
   {
     List<ParameterKey<?>> keys = new ArrayList<>();
     for(Parameter parameter : executable.getParameters()) {
-      keys.add(new ParameterKey<>(parameter, Key.get(parameter.getType(), getQualifier(parameter))));
+      keys.add(new ParameterKey<>(parameter, Key.get(parameter.getType(), qualifier(parameter))));
     }
     return keys;
   }
@@ -190,7 +192,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
    * @param element annotated element: method or field.
    * @return qualifier annotation or null if not present.
    */
-  private static Annotation getQualifier(AnnotatedElement element)
+  private static Annotation qualifier(AnnotatedElement element)
   {
     for(Annotation annotation : element.getAnnotations()) {
       if(annotation.annotationType().isAnnotationPresent(Qualifier.class)) {
@@ -200,7 +202,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     return null;
   }
 
-  private static Class<?> getTypeArgument(Type type)
+  private static Class<?> providerTypeArgument(Type type)
   {
     if(!(type instanceof ParameterizedType)) {
       throw new ProvisionException("Missing parameter argument from provider.");
@@ -224,7 +226,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
       if(!parameter.getType().equals(Provider.class)) {
         return injector.getInstance(key);
       }
-      return new ProxyProvider<>(injector, key.forType(getTypeArgument(parameter.getParameterizedType())));
+      return new ProxyProvider<>(injector, key.forType(providerTypeArgument(parameter.getParameterizedType())));
     }
   }
 
@@ -244,7 +246,7 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
       try {
         Object value = null;
         if(field.getType().equals(Provider.class)) {
-          value = new ProxyProvider<>(injector, key.forType(getTypeArgument(field.getGenericType())));
+          value = new ProxyProvider<>(injector, key.forType(providerTypeArgument(field.getGenericType())));
         }
         else {
           value = injector.getInstance(key);
@@ -258,33 +260,35 @@ class ProvisioningProvider<T> implements ITypedProvider<T>
     }
   }
 
-  private class MethodKey<M>
+  private class MethodKey
   {
     final Method method;
-    final Key<M> key;
+    final Key<?>[] keys;
 
-    public MethodKey(Method method, Key<M> key)
+    public MethodKey(Method method, Key<?>[] keys)
     {
       this.method = method;
-      this.key = key;
+      this.keys = keys;
     }
 
     void invoke(Object instance) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
       try {
-        Object value = null;
-        // method is already validated; it surely has one parameter
-        if(method.getParameterTypes()[0].equals(Provider.class)) {
-          value = new ProxyProvider<>(injector, key.forType(getTypeArgument(method.getGenericParameterTypes()[0])));
-        }
-        else {
-          value = injector.getInstance(key);
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Object[] arguments = new Object[keys.length];
+        for(int i = 0; i < arguments.length; ++i) {
+          if(parameterTypes[i].equals(Provider.class)) {
+            arguments[i] = new ProxyProvider<>(injector, keys[i].forType(providerTypeArgument(method.getGenericParameterTypes()[i])));
+          }
+          else {
+            arguments[i] = injector.getInstance(keys[i]);
+          }
         }
 
-        method.invoke(instance, value);
+        method.invoke(instance, arguments);
       }
       catch(RuntimeException e) {
-        throw new ProvisionException("Fail to inject |%s| to method |%s:%s|. Root cause: %s: %s", key, method.getDeclaringClass().getCanonicalName(), method.getName(), e.getClass().getCanonicalName(), e.getMessage());
+        throw new ProvisionException("Fail to inject |%s| to method |%s:%s|. Root cause: %s: %s", keys, method.getDeclaringClass().getCanonicalName(), method.getName(), e.getClass().getCanonicalName(), e.getMessage());
       }
     }
   }

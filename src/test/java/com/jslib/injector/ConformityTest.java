@@ -63,6 +63,20 @@ public class ConformityTest
   }
 
   @Test
+  public void GivenTwoParametersService_WhenGetInstance_ThenBothTasksInjected()
+  {
+    // given
+    injector.configure(new TestModule(Task.class, TwoParametersService.class));
+
+    // when
+    TwoParametersService service = injector.getInstance(TwoParametersService.class);
+
+    // then
+    assertThat(service.task1, notNullValue());
+    assertThat(service.task2, notNullValue());
+  }
+
+  @Test
   public void Given_When_Then()
   {
     // given
@@ -103,6 +117,19 @@ public class ConformityTest
     @Inject
     public void setTask2(Task task2)
     {
+      this.task2 = task2;
+    }
+  }
+
+  private static class TwoParametersService
+  {
+    private Task task1;
+    private Task task2;
+
+    @Inject
+    public void setTask(Task task1, Task task2)
+    {
+      this.task1 = task1;
       this.task2 = task2;
     }
   }

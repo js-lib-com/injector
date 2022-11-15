@@ -22,7 +22,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    Constructor<NoConstructor> constructor = ProvisioningProvider.getConstructor(NoConstructor.class);
+    Constructor<NoConstructor> constructor = ProvisioningProvider.constructor(NoConstructor.class);
 
     // then
     assertThat(constructor, notNullValue());
@@ -35,7 +35,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    Constructor<DefaultConstructor> constructor = ProvisioningProvider.getConstructor(DefaultConstructor.class);
+    Constructor<DefaultConstructor> constructor = ProvisioningProvider.constructor(DefaultConstructor.class);
 
     // then
     assertThat(constructor, notNullValue());
@@ -48,7 +48,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    Constructor<NoInject> constructor = ProvisioningProvider.getConstructor(NoInject.class);
+    Constructor<NoInject> constructor = ProvisioningProvider.constructor(NoInject.class);
 
     // then
     assertThat(constructor, notNullValue());
@@ -61,7 +61,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    Constructor<SingleInjectAndDefault> constructor = ProvisioningProvider.getConstructor(SingleInjectAndDefault.class);
+    Constructor<SingleInjectAndDefault> constructor = ProvisioningProvider.constructor(SingleInjectAndDefault.class);
 
     // then
     assertThat(constructor, notNullValue());
@@ -74,7 +74,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    Constructor<SingleInject> constructor = ProvisioningProvider.getConstructor(SingleInject.class);
+    Constructor<SingleInject> constructor = ProvisioningProvider.constructor(SingleInject.class);
 
     // then
     assertThat(constructor, notNullValue());
@@ -87,7 +87,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    Constructor<SingleInjectNoDefault> constructor = ProvisioningProvider.getConstructor(SingleInjectNoDefault.class);
+    Constructor<SingleInjectNoDefault> constructor = ProvisioningProvider.constructor(SingleInjectNoDefault.class);
 
     // then
     assertThat(constructor, notNullValue());
@@ -100,7 +100,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    ProvisioningProvider.getConstructor(NoInjectNoDefault.class);
+    ProvisioningProvider.constructor(NoInjectNoDefault.class);
 
     // then
   }
@@ -111,7 +111,7 @@ public class ProvisioningProviderConstructorTest
     // given
 
     // when
-    ProvisioningProvider.getConstructor(MultipleInject.class);
+    ProvisioningProvider.constructor(MultipleInject.class);
 
     // then
   }
